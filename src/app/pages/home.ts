@@ -32,6 +32,26 @@ import { Badge, Empty, ErrorBanner, SkeletonCards, Stat } from '../shared/ui';
         <app-stat label="Planes por revisar" [value]="d.stats.plansToReview" icon="clipboard" tone="bg-amber-100 text-amber-700" />
       </div>
 
+      @if (d.requests.length) {
+        <section class="mt-6 rounded-2xl border border-amber-500/30 bg-amber-100 p-5">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <h2 class="text-lg font-extrabold text-amber-700">Solicitudes de cita desde la app ({{ d.requests.length }})</h2>
+            <a routerLink="/agenda" class="btn-outline btn-sm">Responder en la agenda</a>
+          </div>
+          <ul class="divide-y divide-amber-500/20">
+            @for (r of d.requests; track r.id) {
+              <li class="flex flex-wrap items-center gap-3 py-2 text-sm">
+                <span class="w-44 shrink-0 font-semibold">{{ dateTime(r.startsAt) }}</span>
+                <a [routerLink]="['/pacientes', r.patient.id]" class="flex-1 font-bold hover:underline">{{ name(r.patient) }}</a>
+                @if (r.notes) {
+                  <span class="text-xs text-amber-700">«{{ r.notes }}»</span>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
       <div class="mt-6 grid gap-6 xl:grid-cols-3">
         <section class="card xl:col-span-2">
           <div class="mb-4 flex items-center justify-between">

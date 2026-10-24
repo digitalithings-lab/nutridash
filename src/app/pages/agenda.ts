@@ -109,8 +109,18 @@ function timeKey(d: Date): string {
                     @if (a.notes) {
                       <p class="mt-1.5 text-sm text-muted">{{ a.notes }}</p>
                     }
+                    @if (a.responseNote) {
+                      <p class="mt-1 text-xs text-muted">Tu respuesta: {{ a.responseNote }}</p>
+                    }
                   </div>
                 </div>
+                @if (a.status === 'REQUESTED') {
+                  <div class="mt-3 flex flex-wrap items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-2">
+                    <span class="flex-1 text-xs font-semibold text-amber-700">El paciente pidió esta cita desde la app</span>
+                    <button class="btn-primary btn-sm" [disabled]="busy() === a.id" (click)="respond(a, 'SCHEDULED')"><app-icon name="check" size="sm" /> Aceptar</button>
+                    <button class="btn-outline btn-sm" [disabled]="busy() === a.id" (click)="respond(a, 'REJECTED')">Rechazar</button>
+                  </div>
+                } @else if (a.status !== 'REJECTED') {
                 <div class="mt-3 flex flex-wrap gap-1.5">
                   <button class="btn-primary btn-sm" (click)="registerConsultation(a)">
                     <app-icon name="clipboard" size="sm" /> {{ a.consultation ? 'Ver consulta' : 'Registrar consulta' }}
@@ -129,6 +139,7 @@ function timeKey(d: Date): string {
                     <app-icon name="trash" size="sm" />
                   </button>
                 </div>
+                }
               </li>
             }
           </ul>
@@ -283,7 +294,7 @@ export class Agenda implements OnInit {
         inMonth: d.getMonth() === this.month(),
         isToday: key === today,
         // Las canceladas no cuentan en el calendario.
-        count: (counts.get(key) ?? []).filter((a) => a.status !== 'CANCELLED').length,
+        count: (counts.get(key) ?? []).filter((a) => a.status !== 'CANCELLED' && a.status !== 'REJECTED').length,
       };
     });
   });
@@ -446,12 +457,22 @@ export class Agenda implements OnInit {
 
   // ─── Acciones ───
 
-  protected async setStatus(a: Appointment, status: AppointmentStatus) {
+  // Respuesta a una solicitud de la app, con un mensaje opcional para el paciente.
+  protected respond(a: Appointment, status: 'SCHEDULED' | 'REJECTED') {
+    const note = prompt(
+      status === 'SCHEDULED' ? 'Mensaje para el paciente (opcional):' : 'Motivo del rechazo para el paciente (opcional):',
+      '',
+    );
+    if (note === null) return;
+    void this.setStatus(a, status, note.trim() || undefined);
+  }
+
+  protected async setStatus(a: Appointment, status: AppointmentStatus, responseNote?: string) {
     this.busy.set(a.id);
     this.error.set(null);
     try {
-      await this.api.patch(`/appointments/${a.id}`, { status });
-      this.appointments.update((list) => list.map((x) => (x.id === a.id ? { ...x, status } : x)));
+      await this.api.patch(`/appointments/${a.id}`, { status, ...(responseNote ? { responseNote } : {}) });
+      this.appointments.update((list) => list.map((x) => (x.id === a.id ? { ...x, status, responseNote: responseNote ?? x.responseNote } : x)));
     } catch (err) {
       this.error.set(errorMessage(err, 'No pudimos actualizar la cita.'));
     } finally {

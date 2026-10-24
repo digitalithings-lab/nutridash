@@ -27,6 +27,8 @@ export const appointmentTypeLabels: Record<AppointmentType, string> = {
 };
 
 export const appointmentStatusLabels: Record<AppointmentStatus, Badge> = {
+  REQUESTED: { label: 'Por confirmar', classes: 'bg-amber-100 text-amber-700' },
+  REJECTED: { label: 'Rechazada', classes: 'bg-mist text-muted' },
   SCHEDULED: { label: 'Programada', classes: 'bg-sky-100 text-sky-700' },
   COMPLETED: { label: 'Atendida', classes: 'bg-brand-100 text-brand-700' },
   CANCELLED: { label: 'Cancelada', classes: 'bg-mist text-muted' },

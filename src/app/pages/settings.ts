@@ -14,6 +14,7 @@ import { Badge, ErrorBanner, PageHeader, SkeletonCards, Tabs } from '../shared/u
 
 const TABS = [
   { key: 'profile', label: 'Perfil' },
+  { key: 'app', label: 'App de pacientes' },
   { key: 'clinical', label: 'Preferencias clínicas' },
   { key: 'subscription', label: 'Suscripción' },
   { key: 'security', label: 'Seguridad' },
@@ -93,6 +94,23 @@ const TIMEZONES = [
           </form>
         }
 
+        @case ('app') {
+          <section class="card max-w-3xl">
+            <h2 class="text-lg font-extrabold">Tu código de vinculación</h2>
+            <p class="mt-1 text-sm text-muted">
+              Compártelo con tus pacientes. En la app NutriPro lo escriben al crear su cuenta y quedan vinculados contigo: se les crea un
+              expediente nuevo y pueden pedirte citas. Para un paciente que ya tiene expediente, genera un código de invitación desde su
+              expediente (pestaña «App del paciente»).
+            </p>
+            <div class="mt-5 flex flex-wrap items-center gap-4 rounded-2xl bg-brand-50 p-5">
+              <p class="font-mono text-4xl font-extrabold tracking-[0.35em] text-brand-700">{{ user()?.linkCode ?? '—' }}</p>
+              <button class="btn-outline btn-sm" type="button" (click)="copyLinkCode()">{{ linkCopied() ? 'Copiado' : 'Copiar' }}</button>
+              <button class="btn-ghost btn-sm" type="button" [disabled]="saving()" (click)="regenerateLinkCode()">Generar otro código</button>
+            </div>
+            <p class="mt-3 text-xs text-muted">Si generas otro, el anterior deja de funcionar. Los pacientes ya vinculados no se ven afectados.</p>
+            <app-error class="mt-3 block" [message]="linkError()" />
+          </section>
+        }
         @case ('clinical') {
           <form class="card max-w-3xl space-y-5" (ngSubmit)="saveClinical()">
             <div>
@@ -270,6 +288,8 @@ export class Settings implements OnInit {
   protected readonly plans = signal<SubscriptionPlan[]>([]);
 
   protected profile = { fullName: '', licenseNumber: '', phone: '', clinicName: '', clinicAddress: '', timezone: '' };
+  protected readonly linkError = signal<string | null>(null);
+  protected readonly linkCopied = signal(false);
   protected readonly profileError = signal<string | null>(null);
   protected readonly profileSaved = signal(false);
 
@@ -345,6 +365,33 @@ export class Settings implements OnInit {
   // El PATCH no devuelve el uso; se conserva el que ya teníamos.
   private store(updated: User) {
     this.auth.setUser({ ...updated, usage: updated.usage ?? this.auth.user()?.usage });
+  }
+
+  protected async copyLinkCode() {
+    const code = this.user()?.linkCode;
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2000);
+    } catch {
+      // Sin permiso de portapapeles: el código queda visible.
+    }
+  }
+
+  protected async regenerateLinkCode() {
+    if (!confirm('¿Generar un código nuevo? El actual dejará de funcionar para nuevos pacientes.')) return;
+    this.saving.set(true);
+    this.linkError.set(null);
+    try {
+      const { linkCode } = await this.api.post<{ linkCode: string }>('/account/link-code');
+      const current = this.user();
+      if (current) this.auth.setUser({ ...current, linkCode });
+    } catch (err) {
+      this.linkError.set(errorMessage(err, 'No se pudo generar el código.'));
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   protected async saveProfile() {

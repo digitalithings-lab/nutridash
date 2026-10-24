@@ -4,7 +4,7 @@ export type Role = 'NUTRITIONIST' | 'ADMIN' | 'PATIENT';
 export type Sex = 'FEMALE' | 'MALE';
 export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
 export type AppointmentType = 'FIRST_VISIT' | 'CONTROL' | 'FOLLOW_UP';
-export type AppointmentStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+export type AppointmentStatus = 'REQUESTED' | 'REJECTED' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
 export type ConsultationType = 'INITIAL' | 'FOLLOW_UP';
 export type CalorieMethod = 'AUTOMATIC' | 'MANUAL';
 export type Equation = 'MIFFLIN_ST_JEOR' | 'HARRIS_BENEDICT' | 'FAO_WHO' | 'OWEN' | 'KATCH_MCARDLE' | 'KCAL_PER_KG';
@@ -23,6 +23,7 @@ export interface User {
   phone: string | null;
   clinicName: string | null;
   clinicAddress: string | null;
+  linkCode?: string | null;
   country: string;
   timezone: string;
   defaults: { equation: Equation; exchangeMode: ExchangeMode; choPct: number; proPct: number; fatPct: number };
@@ -121,6 +122,8 @@ export interface Appointment {
   type: AppointmentType;
   status: AppointmentStatus;
   notes: string | null;
+  requestedByPatient?: boolean;
+  responseNote?: string | null;
   patient: PatientRef;
   consultation?: { id: string } | null;
 }
@@ -393,7 +396,8 @@ export interface MealPlan {
 }
 
 export interface HomeSummary {
-  stats: { activePatients: number; appointmentsToday: number; pendingFollowUps: number; plansToReview: number };
+  stats: { activePatients: number; appointmentsToday: number; pendingFollowUps: number; plansToReview: number; appointmentRequests: number };
+  requests: Appointment[];
   today: Appointment[];
   upcoming: Appointment[];
   draftPlans: { id: string; title: string; targetKcal: number; updatedAt: string; patient: PatientRef }[];
