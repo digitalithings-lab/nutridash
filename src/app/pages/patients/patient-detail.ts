@@ -15,6 +15,7 @@ import {
 import { MealPlanSummary, Patient } from '../../core/types';
 import { Icon } from '../../shared/icon';
 import { Badge, Empty, ErrorBanner, Modal, SkeletonCards, Tabs } from '../../shared/ui';
+import { PatientAppTab } from './patient-app-tab';
 import { EvolutionTab } from './patient-evolution';
 import { PatientForm, PatientFormValue } from './patient-form';
 import { LabsTab, MedicationsTab } from './patient-meds-labs';
@@ -29,6 +30,7 @@ const TABS = [
   { key: 'consultas', label: 'Consultas' },
   { key: 'planes', label: 'Planes' },
   { key: 'evolucion', label: 'Evolución' },
+  { key: 'app', label: 'App del paciente' },
 ];
 
 @Component({
@@ -48,6 +50,7 @@ const TABS = [
     MedicationsTab,
     LabsTab,
     EvolutionTab,
+    PatientAppTab,
   ],
   template: `
     <a routerLink="/pacientes" class="mb-4 inline-flex items-center gap-1 text-sm font-bold text-muted hover:text-ink">
@@ -310,6 +313,9 @@ const TABS = [
         }
         @case ('evolucion') {
           <app-evolution-tab [patientId]="p.id" />
+        }
+        @case ('app') {
+          <app-patient-app-tab [patientId]="p.id" />
         }
       }
 

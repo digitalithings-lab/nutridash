@@ -1,6 +1,6 @@
 // Tipos de las respuestas del backend usadas en el dashboard.
 
-export type Role = 'NUTRITIONIST' | 'ADMIN';
+export type Role = 'NUTRITIONIST' | 'ADMIN' | 'PATIENT';
 export type Sex = 'FEMALE' | 'MALE';
 export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
 export type AppointmentType = 'FIRST_VISIT' | 'CONTROL' | 'FOLLOW_UP';

@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/comm
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, from, switchMap, throwError } from 'rxjs';
-import { AuthService } from './auth.service';
+import { AuthService, PatientAccountError } from './auth.service';
 import { API_URL } from './config';
 
 // Añade el token a cada petición al backend y, si expiró, lo renueva una vez y reintenta.
@@ -33,6 +33,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
 // Mensaje legible a partir de un error del backend.
 export function errorMessage(error: unknown, fallback = 'Algo salió mal. Inténtalo de nuevo.'): string {
+  if (error instanceof PatientAccountError) return error.message;
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) return 'No hay conexión con el servidor.';
     const message = error.error?.message;

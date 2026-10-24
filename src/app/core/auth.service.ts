@@ -29,7 +29,13 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<User> {
-    return this.save(await firstValueFrom(this.http.post<AuthResponse>(`${API_URL}/auth/login`, { email, password })));
+    const response = await firstValueFrom(this.http.post<AuthResponse>(`${API_URL}/auth/login`, { email, password }));
+    // Las cuentas de paciente solo usan la app móvil.
+    if (response.user.role === 'PATIENT') {
+      await firstValueFrom(this.http.post(`${API_URL}/auth/logout`, { refreshToken: response.refreshToken })).catch(() => undefined);
+      throw new PatientAccountError();
+    }
+    return this.save(response);
   }
 
   async register(body: { email: string; password: string; fullName: string; licenseNumber?: string; phone?: string; clinicName?: string }): Promise<User> {
@@ -73,6 +79,10 @@ export class AuthService {
   }
 
   private save(response: AuthResponse): User {
+    if (response.user.role === 'PATIENT') {
+      this.clear();
+      throw new PatientAccountError();
+    }
     this.accessToken = response.accessToken;
     writeRefresh(response.refreshToken);
     this.user.set(response.user);
@@ -83,6 +93,12 @@ export class AuthService {
     this.accessToken = null;
     writeRefresh(null);
     this.user.set(null);
+  }
+}
+
+export class PatientAccountError extends Error {
+  constructor() {
+    super('Esta es una cuenta de paciente. Ingresa desde la app móvil de NutriPro.');
   }
 }
 
