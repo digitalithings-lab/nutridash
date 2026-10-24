@@ -40,6 +40,7 @@ const ACCOUNT_STATUS = {
             <tr>
               <th>Nombre</th>
               <th>Consultorio</th>
+              <th>Código</th>
               <th>Plan</th>
               <th class="text-right">Pacientes</th>
               <th class="text-right">Planes</th>
@@ -59,6 +60,13 @@ const ACCOUNT_STATUS = {
                   }
                 </td>
                 <td class="text-muted">{{ u.clinicName ?? '—' }}</td>
+                <td>
+                  @if (u.linkCode) {
+                    <span class="font-mono font-bold tracking-widest text-brand-700">{{ u.linkCode }}</span>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
                 <td>
                   @if (u.subscription; as s) {
                     <p class="font-bold">{{ s.planName }}</p>

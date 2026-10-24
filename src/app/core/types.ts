@@ -438,6 +438,7 @@ export interface AdminUser {
   clinicName: string | null;
   phone: string | null;
   licenseNumber: string | null;
+  linkCode: string | null;
   createdAt: string;
   lastLoginAt: string | null;
   patients: number;
