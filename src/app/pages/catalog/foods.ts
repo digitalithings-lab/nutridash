@@ -1,3 +1,4 @@
+import { DialogService } from '../../shared/dialog';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
@@ -162,6 +163,7 @@ const SOURCE_TABS = [
 })
 export class Foods implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
 
   protected readonly tabs = SOURCE_TABS;
   protected readonly sourceLabels = foodSourceLabels;
@@ -280,7 +282,14 @@ export class Foods implements OnInit {
   }
 
   protected async remove(f: Food) {
-    if (!confirm(`¿Borrar "${f.name}"? Si ya se usó en planes o recetas, solo se ocultará.`)) return;
+    const ok = await this.dialog.confirm({
+      title: `¿Borrar «${f.name}»?`,
+      message: 'Si ya se usó en planes o recetas, solo se ocultará para no alterarlos.',
+      confirmLabel: 'Borrar',
+      tone: 'danger',
+      icon: 'trash',
+    });
+    if (!ok) return;
     this.deleting.set(true);
     try {
       await this.api.delete(`/foods/${f.id}`);

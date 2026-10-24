@@ -1,3 +1,4 @@
+import { DialogService } from '../../shared/dialog';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
@@ -147,6 +148,7 @@ const ACCOUNT_STATUS = {
 })
 export class AdminAccounts implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
 
   protected readonly subLabels = subscriptionStatusLabels;
   protected readonly accountStatus = ACCOUNT_STATUS;
@@ -196,7 +198,16 @@ export class AdminAccounts implements OnInit {
   }
 
   protected async setStatus(u: AdminUser, status: 'ACTIVE' | 'SUSPENDED') {
-    if (status === 'SUSPENDED' && !confirm(`¿Suspender la cuenta de ${u.fullName}? Se cerrarán sus sesiones.`)) return;
+    if (status === 'SUSPENDED') {
+      const ok = await this.dialog.confirm({
+        title: `¿Suspender la cuenta de ${u.fullName}?`,
+        message: 'Se cerrarán sus sesiones y no podrá entrar hasta que la reactives.',
+        confirmLabel: 'Suspender',
+        tone: 'danger',
+        icon: 'shield',
+      });
+      if (!ok) return;
+    }
     this.busy.set(u.id);
     this.error.set(null);
     try {

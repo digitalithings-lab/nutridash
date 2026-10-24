@@ -1,9 +1,10 @@
+import { DialogService } from '../shared/dialog';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../core/api.service';
 import { errorMessage } from '../core/auth.interceptor';
-import { appointmentStatusLabels, appointmentTypeLabels, formatTime, fullName, MONTHS, todayIso } from '../core/format';
+import { appointmentStatusLabels, appointmentTypeLabels, formatDateTime, formatTime, fullName, MONTHS, todayIso } from '../core/format';
 import { Appointment, AppointmentStatus, AppointmentType, PatientListItem, PatientRef } from '../core/types';
 import { Icon } from '../shared/icon';
 import { Badge, Empty, ErrorBanner, Modal, PageHeader } from '../shared/ui';
@@ -225,6 +226,7 @@ function timeKey(d: Date): string {
 })
 export class Agenda implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
   private readonly router = inject(Router);
 
   protected readonly weekHeaders = WEEK_HEADERS;
@@ -458,13 +460,30 @@ export class Agenda implements OnInit {
   // ─── Acciones ───
 
   // Respuesta a una solicitud de la app, con un mensaje opcional para el paciente.
-  protected respond(a: Appointment, status: 'SCHEDULED' | 'REJECTED') {
-    const note = prompt(
-      status === 'SCHEDULED' ? 'Mensaje para el paciente (opcional):' : 'Motivo del rechazo para el paciente (opcional):',
-      '',
-    );
+  protected async respond(a: Appointment, status: 'SCHEDULED' | 'REJECTED') {
+    const accept = status === 'SCHEDULED';
+    const note = await this.dialog.prompt({
+      title: accept ? 'Aceptar la cita' : 'Rechazar la solicitud',
+      message: accept
+        ? 'El paciente verá la cita como confirmada en su app.'
+        : 'El paciente verá que no aceptaste esta solicitud y podrá pedir otro horario.',
+      details: [
+        { label: 'Paciente', value: fullName(a.patient) },
+        { label: 'Fecha', value: formatDateTime(a.startsAt) },
+        { label: 'Tipo', value: this.typeLabels[a.type] },
+        ...(a.notes ? [{ label: 'Motivo', value: a.notes }] : []),
+      ],
+      inputLabel: accept ? 'Mensaje para el paciente (opcional)' : 'Motivo para el paciente (opcional)',
+      placeholder: accept ? 'Ej.: Te espero, trae tus exámenes recientes.' : 'Ej.: Ese día no tengo disponibilidad, pide otro horario.',
+      suggestions: accept
+        ? ['Te espero, trae tus exámenes recientes.', 'Llega 10 minutos antes, por favor.', 'Ven en ayunas para tomar tus medidas.']
+        : ['No tengo disponibilidad en ese horario, elige otro.', 'Ese día no atiendo consultas.', 'Escríbeme para coordinar otra fecha.'],
+      confirmLabel: accept ? 'Aceptar cita' : 'Rechazar',
+      tone: accept ? 'primary' : 'danger',
+      icon: accept ? 'check' : 'x',
+    });
     if (note === null) return;
-    void this.setStatus(a, status, note.trim() || undefined);
+    void this.setStatus(a, status, note || undefined);
   }
 
   protected async setStatus(a: Appointment, status: AppointmentStatus, responseNote?: string) {
@@ -481,7 +500,17 @@ export class Agenda implements OnInit {
   }
 
   protected async remove(a: Appointment) {
-    if (!confirm(`¿Borrar la cita de ${fullName(a.patient)}?`)) return;
+    const ok = await this.dialog.confirm({
+      title: '¿Borrar esta cita?',
+      details: [
+        { label: 'Paciente', value: fullName(a.patient) },
+        { label: 'Fecha', value: formatDateTime(a.startsAt) },
+      ],
+      confirmLabel: 'Borrar',
+      tone: 'danger',
+      icon: 'trash',
+    });
+    if (!ok) return;
     this.busy.set(a.id);
     this.error.set(null);
     try {

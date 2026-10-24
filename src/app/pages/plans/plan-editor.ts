@@ -1,3 +1,4 @@
+import { DialogService } from '../../shared/dialog';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
@@ -162,6 +163,7 @@ type StepKey = (typeof STEPS)[number]['key'];
 export class PlanEditor {
   protected readonly store = inject(PlanStore);
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
   private readonly router = inject(Router);
 
   readonly planId = input.required<string>();
@@ -248,7 +250,15 @@ export class PlanEditor {
 
   async remove() {
     const plan = this.store.plan();
-    if (!plan || !confirm(`¿Eliminar «${plan.title}»? Esta acción no se puede deshacer.`)) return;
+    if (!plan) return;
+    const ok = await this.dialog.confirm({
+      title: `¿Eliminar «${plan.title}»?`,
+      message: 'Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar plan',
+      tone: 'danger',
+      icon: 'trash',
+    });
+    if (!ok) return;
     this.busy.set(true);
     try {
       await this.api.delete(`/meal-plans/${plan.id}`);

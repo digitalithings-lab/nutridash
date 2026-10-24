@@ -1,3 +1,4 @@
+import { DialogService } from '../../shared/dialog';
 import { Component, computed, effect, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { totalsFromServings } from '../../core/calc';
@@ -110,6 +111,7 @@ interface MealRow {
 })
 export class StepMeals {
   protected readonly store = inject(PlanStore);
+  private readonly dialog = inject(DialogService);
   readonly next = output<void>();
   protected readonly fmt = fmtServings;
 
@@ -177,10 +179,19 @@ export class StepMeals {
     this.dirty.set(true);
   }
 
-  protected removeMeal(i: number) {
+  protected async removeMeal(i: number) {
     const meal = this.meals()[i];
     const items = this.store.plan()?.meals.find((m) => m.id === meal.id)?.items.length ?? 0;
-    if (items && !confirm(`«${meal.name}» tiene ${items} alimento(s) en el menú. ¿Quitarlo de todas formas?`)) return;
+    if (items) {
+      const ok = await this.dialog.confirm({
+        title: `¿Quitar «${meal.name}»?`,
+        message: `Tiene ${items} alimento(s) en el menú que también se quitarán al guardar.`,
+        confirmLabel: 'Quitar',
+        tone: 'danger',
+        icon: 'trash',
+      });
+      if (!ok) return;
+    }
     this.meals.update((list) => list.filter((_, j) => j !== i));
     this.dirty.set(true);
   }

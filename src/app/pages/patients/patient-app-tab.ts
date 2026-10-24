@@ -1,3 +1,4 @@
+import { DialogService } from '../../shared/dialog';
 import { Component, effect, inject, input, signal } from '@angular/core';
 import { ApiService } from '../../core/api.service';
 import { errorMessage } from '../../core/auth.interceptor';
@@ -148,6 +149,7 @@ interface AppActivity {
 })
 export class PatientAppTab {
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
   readonly patientId = input.required<string>();
 
   protected readonly data = signal<AppActivity | null>(null);
@@ -193,7 +195,14 @@ export class PatientAppTab {
   }
 
   async revoke() {
-    if (!confirm('¿Quitar el acceso a la app? El paciente ya no podrá entrar; su expediente se conserva.')) return;
+    const ok = await this.dialog.confirm({
+      title: '¿Quitar el acceso a la app?',
+      message: 'El paciente ya no podrá entrar a la app. Su expediente y sus registros se conservan.',
+      confirmLabel: 'Quitar acceso',
+      tone: 'danger',
+      icon: 'logout',
+    });
+    if (!ok) return;
     this.busy.set(true);
     try {
       await this.api.delete(`/patients/${this.patientId()}/app-access`);

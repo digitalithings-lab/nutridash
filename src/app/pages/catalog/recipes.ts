@@ -1,3 +1,4 @@
+import { DialogService } from '../../shared/dialog';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
@@ -188,6 +189,7 @@ interface RecipeModel {
 })
 export class Recipes implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
   protected readonly round = round;
 
   protected readonly recipes = signal<Recipe[]>([]);
@@ -349,7 +351,8 @@ export class Recipes implements OnInit {
   }
 
   protected async remove(r: Recipe) {
-    if (!confirm(`¿Borrar la receta "${r.name}"?`)) return;
+    const ok = await this.dialog.confirm({ title: `¿Borrar la receta «${r.name}»?`, confirmLabel: 'Borrar', tone: 'danger', icon: 'trash' });
+    if (!ok) return;
     this.busy.set(r.id);
     this.error.set(null);
     try {

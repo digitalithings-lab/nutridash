@@ -1,3 +1,4 @@
+import { DialogService } from '../../shared/dialog';
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
@@ -126,6 +127,7 @@ export class MedicationsTab {
   }
 
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
   readonly patient = input.required<Patient>();
   readonly changed = output<void>();
 
@@ -180,7 +182,8 @@ export class MedicationsTab {
   }
 
   protected async remove(m: Medication) {
-    if (!confirm(`¿Eliminar «${m.name}» del expediente?`)) return;
+    const ok = await this.dialog.confirm({ title: `¿Eliminar «${m.name}»?`, message: 'Se quitará del expediente del paciente.', confirmLabel: 'Eliminar', tone: 'danger', icon: 'trash' });
+    if (!ok) return;
     this.error.set(null);
     try {
       await this.api.delete(`/patients/${this.patient().id}/medications/${m.id}`);
@@ -279,6 +282,7 @@ export class MedicationsTab {
 })
 export class LabsTab {
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
   readonly patient = input.required<Patient>();
   readonly changed = output<void>();
 
@@ -325,7 +329,17 @@ export class LabsTab {
   }
 
   protected async remove(l: LabResult) {
-    if (!confirm(`¿Eliminar el resultado «${l.name}» del ${this.date(l.takenOn)}?`)) return;
+    const ok = await this.dialog.confirm({
+      title: '¿Eliminar este resultado?',
+      details: [
+        { label: 'Prueba', value: l.name },
+        { label: 'Fecha', value: this.date(l.takenOn) },
+      ],
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+      icon: 'trash',
+    });
+    if (!ok) return;
     this.error.set(null);
     try {
       await this.api.delete(`/patients/${this.patient().id}/labs/${l.id}`);

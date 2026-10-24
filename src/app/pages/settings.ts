@@ -1,3 +1,4 @@
+import { DialogService } from '../shared/dialog';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -268,6 +269,7 @@ const TIMEZONES = [
 })
 export class Settings implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(DialogService);
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
 
@@ -380,7 +382,13 @@ export class Settings implements OnInit {
   }
 
   protected async regenerateLinkCode() {
-    if (!confirm('¿Generar un código nuevo? El actual dejará de funcionar para nuevos pacientes.')) return;
+    const ok = await this.dialog.confirm({
+      title: '¿Generar un código nuevo?',
+      message: 'El código actual dejará de funcionar para pacientes nuevos. Los que ya están vinculados no se ven afectados.',
+      confirmLabel: 'Generar código',
+      icon: 'refresh',
+    });
+    if (!ok) return;
     this.saving.set(true);
     this.linkError.set(null);
     try {
