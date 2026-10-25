@@ -93,6 +93,9 @@ interface MealRow {
       </table>
     </div>
 
+    @if (duplicateName(); as dup) {
+      <p class="mt-3 text-sm font-semibold text-danger-500">Hay dos tiempos de comida llamados «{{ dup }}». Cambia uno de los nombres para poder guardar.</p>
+    }
     @if (!allOk()) {
       <p class="mt-3 text-sm font-semibold text-coral-700">Hay grupos cuya suma no coincide con el total diario (marcados en naranja).</p>
     }
@@ -131,7 +134,16 @@ export class StepMeals {
     return sum;
   });
   protected readonly allOk = computed(() => this.groups().every((g) => this.sumOk(g.key)));
-  protected readonly validNames = computed(() => this.meals().every((m) => m.name.trim().length > 0));
+  protected readonly duplicateName = computed(() => {
+    const seen = new Set<string>();
+    for (const m of this.meals()) {
+      const key = m.name.trim().toLowerCase();
+      if (seen.has(key)) return m.name.trim();
+      seen.add(key);
+    }
+    return null;
+  });
+  protected readonly validNames = computed(() => this.meals().every((m) => m.name.trim().length > 0) && !this.duplicateName());
   protected readonly totalKcal = computed(() => this.meals().reduce((s, m) => s + this.mealKcal(m), 0));
 
   constructor() {
@@ -175,7 +187,11 @@ export class StepMeals {
   }
 
   protected addMeal() {
-    this.meals.update((list) => [...list, { name: 'Colación', time: null, notes: null, exchanges: {} }]);
+    // Nombre único: «Colación», «Colación 2», …
+    const names = new Set(this.meals().map((m) => m.name.trim().toLowerCase()));
+    let name = 'Colación';
+    for (let n = 2; names.has(name.toLowerCase()); n++) name = `Colación ${n}`;
+    this.meals.update((list) => [...list, { name, time: null, notes: null, exchanges: {} }]);
     this.dirty.set(true);
   }
 
