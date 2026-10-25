@@ -3,14 +3,27 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { errorMessage } from '../../core/auth.interceptor';
-import { ageFrom, anthropometry } from '../../core/calc';
+import { ageFrom, anthropometry, BODY_FAT_METHODS, BodyFatMethod, bodyFat, Skinfolds, SKINFOLDS } from '../../core/calc';
+
 import { appointmentTypeLabels, formatDate, formatDateTime, fullName, planStatusLabels, todayIso } from '../../core/format';
 import { Consultation, ConsultationDetail, ConsultationType, Indicator, Patient, Sex } from '../../core/types';
 import { Icon } from '../../shared/icon';
 import { Badge, ErrorBanner, PageHeader, SkeletonCards } from '../../shared/ui';
 
+// Medidas adicionales guardadas en la consulta (columna JSON extra_measures).
+// skinfolds guarda el promedio de cada pliegue; skinfoldReadings, las tomas individuales.
+interface ExtraMeasures {
+  skinfolds?: Skinfolds;
+  skinfoldReadings?: Partial<Record<keyof Skinfolds, number[]>>;
+  wristCm?: number;
+  bodyFatMethod?: BodyFatMethod;
+}
+
+const READINGS = 3;
+
 type NumKey =
   | 'weightKg'
+  | 'usualWeightKg'
   | 'heightCm'
   | 'waistCm'
   | 'hipCm'
@@ -27,7 +40,7 @@ type NumKey =
 type TextKey = 'reason' | 'clinicalFindings' | 'diagnosis' | 'symptoms' | 'treatmentChanges' | 'nextSteps' | 'notes';
 
 const NUM_KEYS: NumKey[] = [
-  'weightKg', 'heightCm', 'waistCm', 'hipCm', 'armCm', 'calfCm', 'neckCm',
+  'weightKg', 'usualWeightKg', 'heightCm', 'waistCm', 'hipCm', 'armCm', 'calfCm', 'neckCm',
   'bodyFatPct', 'muscleMassKg', 'visceralFat', 'systolicBp', 'diastolicBp', 'adherencePct',
 ];
 const TEXT_KEYS: TextKey[] = ['reason', 'clinicalFindings', 'diagnosis', 'symptoms', 'treatmentChanges', 'nextSteps', 'notes'];
@@ -35,7 +48,8 @@ const INT_KEYS: NumKey[] = ['systolicBp', 'diastolicBp', 'adherencePct'];
 
 // Medidas antropométricas con sus límites (los mismos que valida el backend).
 const MEASURES: { key: NumKey; label: string; unit: string; min: number; max: number; step: string }[] = [
-  { key: 'weightKg', label: 'Peso', unit: 'kg', min: 1, max: 400, step: '0.1' },
+  { key: 'weightKg', label: 'Peso actual', unit: 'kg', min: 1, max: 400, step: '0.1' },
+  { key: 'usualWeightKg', label: 'Peso habitual', unit: 'kg', min: 1, max: 400, step: '0.1' },
   { key: 'heightCm', label: 'Talla', unit: 'cm', min: 30, max: 250, step: '0.1' },
   { key: 'waistCm', label: 'Cintura', unit: 'cm', min: 20, max: 250, step: '0.1' },
   { key: 'hipCm', label: 'Cadera', unit: 'cm', min: 20, max: 250, step: '0.1' },
@@ -138,11 +152,17 @@ interface PatientInfo {
           <!-- Antropometría -->
           <section class="card space-y-4">
             <div>
-              <h2 class="text-lg font-extrabold">Antropometría</h2>
+              <h2 class="text-lg font-extrabold">Antropometría y composición corporal</h2>
               @if (isNew() && heightFromLast()) {
-                <p class="text-xs text-muted">Talla precargada de la última consulta.</p>
+                <p class="text-xs text-muted">Talla y peso habitual precargados de la última consulta.</p>
               }
             </div>
+            @if (patient(); as p) {
+              <div class="flex flex-wrap gap-2">
+                <span class="chip bg-mist text-ink">Edad: {{ age() }} años</span>
+                <span class="chip bg-mist text-ink">Sexo: {{ p.sex === 'FEMALE' ? 'Femenino' : 'Masculino' }}</span>
+              </div>
+            }
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               @for (m of measures; track m.key) {
                 <div>
@@ -167,6 +187,68 @@ interface PatientInfo {
                   <span class="text-muted">/</span>
                   <input class="input" type="number" inputmode="numeric" name="diastolicBp" min="30" max="160" step="1" placeholder="Diastólica" aria-label="Presión diastólica" [(ngModel)]="form.nums.diastolicBp" />
                 </div>
+              </div>
+              <div>
+                <label class="label" for="c-wrist">Muñeca <span class="normal-case">(cm)</span></label>
+                <input class="input" id="c-wrist" name="wristCm" type="number" inputmode="decimal" min="8" max="30" step="0.1" [(ngModel)]="form.wristCm" />
+              </div>
+            </div>
+
+            <!-- Pliegues y % de grasa calculado -->
+            <div class="border-t border-line pt-4">
+              <h3 class="font-extrabold">Pliegues cutáneos <span class="text-sm font-semibold text-muted">(mm)</span></h3>
+              <p class="mb-3 text-xs text-muted">Llena los que midas con el plicómetro y elige el método para calcular el porcentaje de grasa.</p>
+              <div class="overflow-x-auto rounded-xl border border-line">
+                <table class="table-base">
+                  <thead>
+                    <tr>
+                      <th>Pliegue</th>
+                      @for (r of readingIndexes; track r) {
+                        <th class="text-center">Toma {{ r + 1 }}</th>
+                      }
+                      <th class="text-right">Promedio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (f of skinfoldFields; track f.key) {
+                      <tr>
+                        <td class="font-semibold">{{ f.label }}</td>
+                        @for (r of readingIndexes; track r) {
+                          <td class="px-1 py-1.5 text-center">
+                            <input
+                              class="input w-20 px-2 py-1.5 text-center"
+                              type="number"
+                              inputmode="decimal"
+                              min="1"
+                              max="80"
+                              step="0.5"
+                              [name]="'sf-' + f.key + '-' + r"
+                              [attr.aria-label]="f.label + ', toma ' + (r + 1)"
+                              [(ngModel)]="form.readings[f.key][r]"
+                            />
+                          </td>
+                        }
+                        <td class="text-right font-bold">{{ average(f.key) ?? '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-4 space-y-2">
+                @for (r of fatResults(); track r.method) {
+                  <div class="flex items-center gap-3 rounded-xl border px-3 py-2" [class]="r.method === form.fatMethod ? 'border-brand-500 bg-brand-50' : 'border-line'">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-semibold">{{ r.label }}</p>
+                      @if (r.missing) {
+                        <p class="text-xs text-muted">{{ r.missing }}</p>
+                      }
+                    </div>
+                    <span class="w-16 text-right text-lg font-extrabold" [class.text-soft]="r.bodyFatPct === null">{{ r.bodyFatPct !== null ? r.bodyFatPct + ' %' : '—' }}</span>
+                    <button type="button" class="btn-secondary btn-sm" [disabled]="r.bodyFatPct === null" (click)="useBodyFat(r.method, r.bodyFatPct)">
+                      {{ r.method === form.fatMethod && form.nums.bodyFatPct === r.bodyFatPct ? 'En uso' : 'Usar' }}
+                    </button>
+                  </div>
+                }
               </div>
             </div>
           </section>
@@ -246,6 +328,9 @@ interface PatientInfo {
                       <span class="text-sm" [class]="i.alert ? 'text-coral-700' : 'text-muted'">{{ i.label }}</span>
                       <span class="font-extrabold whitespace-nowrap" [class]="i.alert ? 'text-coral-700' : 'text-ink'">{{ i.value }} {{ i.unit }}</span>
                     </div>
+                    @if (i.formula) {
+                      <p class="text-[11px] text-soft">{{ i.formula }}</p>
+                    }
                     @if (i.status) {
                       <p class="flex items-center gap-1 text-xs font-bold" [class]="i.alert ? 'text-danger-500' : 'text-brand-700'">
                         @if (i.alert) {
@@ -360,6 +445,7 @@ export class ConsultationForm {
   private initialWeight: number | null = null;
 
   protected form = this.emptyForm();
+  protected readonly skinfoldFields = SKINFOLDS;
 
   constructor() {
     effect(() => {
@@ -376,7 +462,48 @@ export class ConsultationForm {
       appointmentId: '',
       nums: Object.fromEntries(NUM_KEYS.map((k) => [k, null])) as Record<NumKey, number | null>,
       texts: Object.fromEntries(TEXT_KEYS.map((k) => [k, ''])) as Record<TextKey, string>,
+      // Hasta tres tomas por pliegue; se usa el promedio de las que tengan valor.
+      readings: Object.fromEntries(SKINFOLDS.map((f) => [f.key, Array(READINGS).fill(null)])) as Record<keyof Skinfolds, (number | null)[]>,
+      wristCm: null as number | null,
+      fatMethod: null as BodyFatMethod | null,
     };
+  }
+
+  // % de grasa con cada método según las medidas escritas.
+  protected fatResults() {
+    const p = this.patient();
+    if (!p) return [];
+    const n = this.form.nums;
+    const folds = this.averages();
+    return BODY_FAT_METHODS.map((m) =>
+      bodyFat(m.value, {
+        sex: p.sex,
+        ageYears: this.age(),
+        weightKg: this.num(n.weightKg),
+        heightCm: this.num(n.heightCm),
+        waistCm: this.num(n.waistCm),
+        hipCm: this.num(n.hipCm),
+        neckCm: this.num(n.neckCm),
+        skinfolds: folds,
+      }),
+    );
+  }
+
+  protected readonly readingIndexes = Array.from({ length: READINGS }, (_, i) => i);
+
+  protected average(key: keyof Skinfolds): number | null {
+    const values = this.form.readings[key].map((v) => this.num(v)).filter((v): v is number => v !== null && v > 0);
+    return values.length ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : null;
+  }
+
+  private averages(): Skinfolds {
+    return Object.fromEntries(SKINFOLDS.map((f) => [f.key, this.average(f.key)])) as Skinfolds;
+  }
+
+  protected useBodyFat(method: BodyFatMethod, pct: number | null) {
+    if (pct === null) return;
+    this.form.nums.bodyFatPct = pct;
+    this.form.fatMethod = method;
   }
 
   // Nueva consulta: datos del paciente y talla de la última consulta.
@@ -394,6 +521,8 @@ export class ConsultationForm {
       this.form.type = past.length ? 'FOLLOW_UP' : 'INITIAL';
       const lastHeight = past.find((c) => c.heightCm !== null)?.heightCm ?? null;
       this.form.nums.heightCm = lastHeight !== null ? Number(lastHeight) : null;
+      const lastUsual = (past as (Consultation & { usualWeightKg?: number | null })[]).find((c) => c.usualWeightKg)?.usualWeightKg ?? null;
+      this.form.nums.usualWeightKg = lastUsual !== null ? Number(lastUsual) : null;
       this.heightFromLast.set(lastHeight !== null);
       this.previousWeight = this.num(past.find((c) => c.weightKg !== null)?.weightKg);
       this.initialWeight = this.num([...past].reverse().find((c) => c.weightKg !== null)?.weightKg);
@@ -438,6 +567,13 @@ export class ConsultationForm {
     form.type = d.type;
     for (const k of NUM_KEYS) form.nums[k] = this.num(d[k]);
     for (const k of TEXT_KEYS) form.texts[k] = d[k] ?? '';
+    const extra = (d as ConsultationDetail & { extraMeasures?: ExtraMeasures | null }).extraMeasures;
+    for (const f of SKINFOLDS) {
+      const saved = extra?.skinfoldReadings?.[f.key] ?? (extra?.skinfolds?.[f.key] ? [extra.skinfolds[f.key]!] : []);
+      form.readings[f.key] = Array.from({ length: READINGS }, (_, i) => saved[i] ?? null);
+    }
+    form.wristCm = extra?.wristCm ?? null;
+    form.fatMethod = extra?.bodyFatMethod ?? null;
     this.form = form;
   }
 
@@ -459,6 +595,7 @@ export class ConsultationForm {
       heightCm: this.num(n.heightCm),
       waistCm: this.num(n.waistCm),
       hipCm: this.num(n.hipCm),
+      usualWeightKg: this.num(n.usualWeightKg),
       bodyFatPct: this.num(n.bodyFatPct),
       previousWeightKg: this.previousWeight,
       initialWeightKg: this.initialWeight,
@@ -512,6 +649,20 @@ export class ConsultationForm {
       if (v < min || v > max) return `${label}: el valor debe estar entre ${min} y ${max}.`;
       body[k] = v;
     }
+    // Pliegues, muñeca y método del % de grasa se guardan juntos en las medidas adicionales.
+    const skinfolds = Object.fromEntries(Object.entries(this.averages()).filter(([, v]) => v !== null));
+    const skinfoldReadings = Object.fromEntries(
+      SKINFOLDS.map((f) => [f.key, this.form.readings[f.key].map((v) => this.num(v)).filter((v): v is number => v !== null && v > 0)]).filter(
+        ([, list]) => (list as number[]).length,
+      ),
+    );
+    const wrist = this.num(this.form.wristCm);
+    const extra: ExtraMeasures = {
+      ...(Object.keys(skinfolds).length ? { skinfolds, skinfoldReadings } : {}),
+      ...(wrist ? { wristCm: wrist } : {}),
+      ...(this.form.fatMethod ? { bodyFatMethod: this.form.fatMethod } : {}),
+    };
+    if (Object.keys(extra).length || editing) body['extraMeasures'] = extra;
     return body;
   }
 

@@ -15,6 +15,7 @@ const NUTRITIONIST_NAV: NavItem[] = [
   { label: 'Inicio', icon: 'home', link: '/inicio' },
   { label: 'Pacientes', icon: 'users', link: '/pacientes' },
   { label: 'Agenda', icon: 'calendar', link: '/agenda' },
+  { label: 'Calculadora', icon: 'scale', link: '/calculadora' },
   { label: 'Alimentos', icon: 'apple', link: '/alimentos' },
   { label: 'Recetas', icon: 'book', link: '/recetas' },
   { label: 'Informes', icon: 'document', link: '/informes' },

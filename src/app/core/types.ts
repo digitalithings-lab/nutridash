@@ -179,6 +179,7 @@ export interface Indicator {
   unit: string;
   status?: string;
   alert?: boolean;
+  formula?: string;
 }
 
 export interface Consultation {
@@ -189,6 +190,7 @@ export interface Consultation {
   date: string;
   reason: string | null;
   weightKg: number | null;
+  usualWeightKg: number | null;
   heightCm: number | null;
   waistCm: number | null;
   hipCm: number | null;
@@ -360,6 +362,18 @@ export interface MealPlan {
   bodyFatPct: number | null;
   kcalPerKg: number | null;
   activityFactor: number | null;
+  weightBasis: 'AUTO' | 'ACTUAL' | 'IDEAL' | 'ADJUSTED' | null;
+  energyWeightKg: number | null;
+  energyWeight: { basis: 'ACTUAL' | 'IDEAL' | 'ADJUSTED'; weightKg: number; explanation: string } | null;
+  stressFactor: number | null;
+  physiologicalStage: string | null;
+  physiologicalKcal: number | null;
+  exerciseKcal: number | null;
+  activityDetail: {
+    occupation?: string;
+    sedentaryHours?: number;
+    exercises: { type: string; met: number; daysPerWeek: number; minutes: number }[];
+  } | null;
   restingKcal: number | null;
   totalKcal: number | null;
   adjustmentPct: number | null;

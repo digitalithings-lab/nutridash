@@ -39,6 +39,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/consultations/consultation-form').then((m) => m.ConsultationForm),
       },
       { path: 'planes/:planId', title: 'Plan alimentario · NutriPro', loadComponent: () => import('./pages/plans/plan-editor').then((m) => m.PlanEditor) },
+      { path: 'calculadora', title: 'Calculadora · NutriPro', loadComponent: () => import('./pages/calculator').then((m) => m.Calculator) },
       { path: 'alimentos', title: 'Alimentos · NutriPro', loadComponent: () => import('./pages/catalog/foods').then((m) => m.Foods) },
       { path: 'recetas', title: 'Recetas · NutriPro', loadComponent: () => import('./pages/catalog/recipes').then((m) => m.Recipes) },
       { path: 'informes', title: 'Informes · NutriPro', loadComponent: () => import('./pages/reports').then((m) => m.Reports) },
