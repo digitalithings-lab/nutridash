@@ -7,6 +7,9 @@ import { foodSourceLabels } from '../../core/format';
 import { ExchangeGroup, ExchangeSystem, Food } from '../../core/types';
 import { Icon } from '../../shared/icon';
 import { Badge, Empty, ErrorBanner, Modal, PageHeader, Tabs } from '../../shared/ui';
+import { glycemicLoad } from '../../core/calc';
+import { imageUrl } from '../../core/files';
+import { FoodThumb, GiBadge } from '../../shared/food';
 import { FoodForm } from './food-form';
 
 const SOURCE_TABS = [
@@ -18,7 +21,7 @@ const SOURCE_TABS = [
 
 @Component({
   selector: 'app-foods',
-  imports: [FormsModule, Icon, Badge, Empty, ErrorBanner, Modal, PageHeader, Tabs, FoodForm],
+  imports: [FormsModule, Icon, Badge, Empty, ErrorBanner, Modal, PageHeader, Tabs, FoodForm, FoodThumb, GiBadge],
   template: `
     <app-page-header title="Alimentos" subtitle="Catálogo de Panamá, listas tradicionales y tus alimentos propios.">
       <button class="btn-primary" (click)="openForm(null)"><app-icon name="plus" size="sm" /> Nuevo alimento</button>
@@ -68,11 +71,12 @@ const SOURCE_TABS = [
           @for (f of foods(); track f.id) {
             <li>
               <button class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-canvas sm:px-5" (click)="openDetail(f)">
-                <span class="h-10 w-1.5 shrink-0 rounded-full" [style.background-color]="f.group?.color ?? '#bfd0ca'"></span>
+                <app-food-thumb [imageId]="f.imageId" [name]="f.name" [color]="f.group?.color" [size]="44" />
                 <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap items-center gap-2">
-                    <p class="truncate font-bold text-ink">{{ f.name }}</p>
+                    <p class="truncate font-bold text-ink">{{ f.name }}@if (f.brand) {<span class="font-semibold text-muted"> · {{ f.brand }}</span>}</p>
                     <app-badge [badge]="sourceLabels[f.source]" />
+                    <app-gi-badge [value]="f.glycemicIndex" />
                   </div>
                   <p class="truncate text-xs text-muted">
                     {{ f.category }} · {{ f.portionText }}@if (f.portionGrams) { ({{ f.portionGrams }} g)}
@@ -97,8 +101,15 @@ const SOURCE_TABS = [
     @if (detail(); as f) {
       <app-modal [title]="f.name" (closed)="detail.set(null)">
         <div class="space-y-5">
+          @if (f.imageId) {
+            <img [src]="image(f.imageId)" [alt]="f.name" class="max-h-56 w-full rounded-2xl object-cover" />
+          }
           <div class="flex flex-wrap items-center gap-2">
             <app-badge [badge]="sourceLabels[f.source]" />
+            @if (f.brand) {
+              <span class="chip bg-mist text-ink">{{ f.brand }}</span>
+            }
+            <app-gi-badge [value]="f.glycemicIndex" />
             @if (f.group) {
               <span class="chip text-white" [style.background-color]="f.group.color">{{ f.group.name }}</span>
             }
@@ -116,6 +127,13 @@ const SOURCE_TABS = [
               </div>
             }
           </div>
+          @if (f.glycemicIndex !== null) {
+            <p class="rounded-xl bg-canvas px-4 py-3 text-sm">
+              Índice glucémico <b>{{ f.glycemicIndex }}</b> · carga glucémica por porción
+              <b>{{ load(f).value }}</b> ({{ loadLabels[load(f).level] }}).
+              <span class="text-muted">IG bajo ≤ 55, medio 56–69, alto ≥ 70.</span>
+            </p>
+          }
           @if (f.notes) {
             <p class="text-sm text-muted">{{ f.notes }}</p>
           }
@@ -132,9 +150,13 @@ const SOURCE_TABS = [
               <ul class="max-h-64 divide-y divide-line overflow-y-auto rounded-xl border border-line">
                 @for (e of equivalents(); track e.id) {
                   <li class="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-                    <span class="min-w-0">
-                      <span class="font-bold">{{ e.name }}</span>
-                      <span class="text-muted"> · {{ e.portionText }}</span>
+                    <span class="flex min-w-0 items-center gap-2">
+                      <app-food-thumb [imageId]="e.imageId" [name]="e.name" [color]="e.group?.color" [size]="28" />
+                      <span class="min-w-0">
+                        <span class="font-bold">{{ e.name }}</span>
+                        <span class="text-muted"> · {{ e.portionText }}</span>
+                      </span>
+                      <app-gi-badge [value]="e.glycemicIndex" />
                     </span>
                     <span class="shrink-0 text-xs text-muted">{{ e.kcal }} kcal</span>
                   </li>
@@ -162,6 +184,12 @@ const SOURCE_TABS = [
   `,
 })
 export class Foods implements OnInit {
+  protected readonly image = imageUrl;
+  protected readonly loadLabels = { LOW: 'baja', MEDIUM: 'media', HIGH: 'alta' };
+  protected load(f: Food) {
+    return glycemicLoad(f.glycemicIndex ?? 0, f.choG);
+  }
+
   private readonly api = inject(ApiService);
   private readonly dialog = inject(DialogService);
 

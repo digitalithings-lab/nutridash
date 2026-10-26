@@ -17,7 +17,6 @@ import {
   energyWeight,
   EQUATIONS,
   Equation,
-  frameSize,
   macroGrams,
   round,
   Skinfolds,
@@ -30,15 +29,16 @@ import { Consultation, Patient, PatientListItem, Sex } from '../core/types';
 import { Icon } from '../shared/icon';
 import { ErrorBanner, PageHeader } from '../shared/ui';
 
-type NumField = 'age' | 'weight' | 'usual' | 'height' | 'waist' | 'hip' | 'neck' | 'arm' | 'wrist';
+type NumField = 'age' | 'weight' | 'usual' | 'height' | 'waist' | 'hip' | 'arm';
 
 const CIRCUMFERENCES: { key: NumField; label: string }[] = [
   { key: 'waist', label: 'Cintura' },
   { key: 'hip', label: 'Cadera' },
-  { key: 'neck', label: 'Cuello' },
   { key: 'arm', label: 'Brazo' },
-  { key: 'wrist', label: 'Muñeca' },
 ];
+
+// Métodos de % de grasa de la calculadora (sin el de circunferencias, que necesita el cuello).
+const CALCULATOR_FAT_METHODS = BODY_FAT_METHODS.filter((m) => m.value !== 'NAVY');
 
 // Calculadora rápida: IMC, % de grasa por varios métodos, calorías por ecuación y macros,
 // sin necesidad de abrir una consulta. Opcionalmente precarga y guarda los datos de un paciente.
@@ -125,8 +125,8 @@ const CIRCUMFERENCES: { key: NumField; label: string }[] = [
 
         <section class="card">
           <h2 class="mb-1 text-lg font-extrabold">Circunferencias <span class="text-sm font-semibold text-muted">(cm)</span></h2>
-          <p class="mb-4 text-xs text-muted">Cintura, cadera y cuello para el método de circunferencias; brazo y muñeca para músculo del brazo y complexión.</p>
-          <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <p class="mb-4 text-xs text-muted">Cintura y cadera para el riesgo cardiometabólico; brazo (con el pliegue tricipital) para el músculo del brazo.</p>
+          <div class="grid gap-4 sm:grid-cols-3">
             @for (c of circumferences; track c.key) {
               <div>
                 <label class="label" [for]="'calc-' + c.key">{{ c.label }}</label>
@@ -357,9 +357,7 @@ export class Calculator {
     height: null,
     waist: null,
     hip: null,
-    neck: null,
     arm: null,
-    wrist: null,
   });
   protected readonly folds = signal<Skinfolds>({});
   protected readonly activity = signal(1.375);
@@ -406,7 +404,6 @@ export class Calculator {
       heightCm: v.height,
       waistCm: v.waist,
       hipCm: v.hip,
-      neckCm: v.neck,
       skinfolds: this.folds(),
     };
   });
@@ -437,7 +434,7 @@ export class Calculator {
       .map((i) => ({ label: i.label, value: `${i.value} ${i.unit}`.trim(), formula: i.formula })),
   );
 
-  protected readonly fatResults = computed(() => BODY_FAT_METHODS.map((m) => bodyFat(m.value, this.bodyInput())));
+  protected readonly fatResults = computed(() => CALCULATOR_FAT_METHODS.map((m) => bodyFat(m.value, this.bodyInput())));
 
   // El método elegido o, si no hay, el primero que tenga datos completos.
   private readonly chosenFat = computed(() => {
@@ -509,10 +506,6 @@ export class Calculator {
     const rows: { label: string; value: string; alert?: boolean }[] = this.indicators()
       .filter((i) => ['waist', 'whr', 'whtr', 'idealWeightPct', 'usualWeightPct', 'weightLossPct'].includes(i.key))
       .map((i) => ({ label: i.label, value: `${i.value}${i.unit ? ' ' + i.unit : ''} · ${i.status ?? ''}`, alert: i.alert }));
-    if (v.height && v.wrist) {
-      const f = frameSize(sex, v.height, v.wrist);
-      rows.push({ label: 'Complexión (talla/muñeca)', value: `${f.label} · ${f.ratio}` });
-    }
     const triceps = this.folds().triceps;
     if (v.arm && triceps) {
       const a = armIndices(sex, v.arm, triceps);
@@ -561,13 +554,10 @@ export class Calculator {
       height,
       waist: last?.waistCm ?? null,
       hip: last?.hipCm ?? null,
-      neck: last?.neckCm ?? null,
       arm: last?.armCm ?? null,
-      wrist: null,
     });
-    const extra = (last as (Consultation & { extraMeasures?: { skinfolds?: Skinfolds; wristCm?: number } }) | undefined)?.extraMeasures;
+    const extra = (last as (Consultation & { extraMeasures?: { skinfolds?: Skinfolds } }) | undefined)?.extraMeasures;
     this.folds.set(extra?.skinfolds ?? {});
-    if (extra?.wristCm) this.set('wrist', extra.wristCm);
   }
 
   protected clearPatient() {
@@ -590,12 +580,10 @@ export class Calculator {
         heightCm: v.height ?? undefined,
         waistCm: v.waist ?? undefined,
         hipCm: v.hip ?? undefined,
-        neckCm: v.neck ?? undefined,
         armCm: v.arm ?? undefined,
         bodyFatPct: fat?.bodyFatPct ?? undefined,
         extraMeasures: {
           ...(Object.keys(skinfolds).length ? { skinfolds } : {}),
-          ...(v.wrist ? { wristCm: v.wrist } : {}),
           ...(fat ? { bodyFatMethod: fat.method } : {}),
         },
       });

@@ -285,6 +285,9 @@ export interface Food {
   proG: number;
   fatG: number;
   fiberG: number | null;
+  glycemicIndex: number | null;
+  brand: string | null;
+  imageId: string | null;
   notes: string | null;
   active: boolean;
   group: (ExchangeGroup & { system: { code: string } }) | null;

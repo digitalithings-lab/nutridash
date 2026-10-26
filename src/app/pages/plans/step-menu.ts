@@ -6,6 +6,7 @@ import { foodSourceLabels, servings as fmtServings } from '../../core/format';
 import { Food, PlanItem, PlanMeal, Recipe } from '../../core/types';
 import { Icon } from '../../shared/icon';
 import { Badge, ErrorBanner, Modal } from '../../shared/ui';
+import { FoodThumb, GiBadge } from '../../shared/food';
 import { PlanStore } from './plan-store';
 
 type PickerTab = 'foods' | 'recipes' | 'custom';
@@ -13,7 +14,7 @@ type PickerTab = 'foods' | 'recipes' | 'custom';
 // Paso 5: menú. Alimentos, recetas y sustituciones equivalentes para cada tiempo de comida.
 @Component({
   selector: 'app-step-menu',
-  imports: [FormsModule, Icon, Modal, Badge, ErrorBanner],
+  imports: [FormsModule, Icon, Modal, Badge, ErrorBanner, FoodThumb, GiBadge],
   template: `
     <div class="space-y-4">
       @for (meal of store.plan()?.meals ?? []; track meal.id) {
@@ -43,9 +44,12 @@ type PickerTab = 'foods' | 'recipes' | 'custom';
               @for (item of mains(meal); track item.id) {
                 <li class="px-4 py-3">
                   <div class="flex flex-wrap items-center gap-3">
-                    <span class="size-2.5 shrink-0 rounded-full" [style.background]="itemColor(item)"></span>
+                    <app-food-thumb [imageId]="item.food?.imageId" [name]="itemName(item)" [color]="itemColor(item)" [size]="36" />
                     <div class="min-w-0 flex-1">
-                      <p class="font-semibold">{{ itemName(item) }}</p>
+                      <p class="flex flex-wrap items-center gap-2 font-semibold">
+                        {{ itemName(item) }}
+                        <app-gi-badge [value]="item.food?.glycemicIndex" />
+                      </p>
                       <p class="text-xs text-muted">{{ itemAmount(item) }} · {{ round(item.macros.kcal) }} kcal · C {{ round(item.macros.choG) }} · P {{ round(item.macros.proG) }} · G {{ round(item.macros.fatG) }}</p>
                     </div>
                     @if (!store.readonly()) {
@@ -127,11 +131,12 @@ type PickerTab = 'foods' | 'recipes' | 'custom';
           <div class="max-h-80 overflow-y-auto rounded-xl border border-line">
             @for (f of foods(); track f.id) {
               <button class="flex w-full cursor-pointer items-center gap-3 border-b border-line px-3 py-2.5 text-left last:border-0 hover:bg-canvas" [class.bg-brand-50]="selectedFood()?.id === f.id" (click)="pickFood(f)">
-                <span class="size-2.5 shrink-0 rounded-full" [style.background]="f.group?.color ?? '#97a8a2'"></span>
+                <app-food-thumb [imageId]="f.imageId" [name]="f.name" [color]="f.group?.color" [size]="34" />
                 <span class="min-w-0 flex-1">
-                  <span class="block truncate text-sm font-semibold">{{ f.name }}</span>
+                  <span class="block truncate text-sm font-semibold">{{ f.name }}@if (f.brand) {<span class="text-muted"> · {{ f.brand }}</span>}</span>
                   <span class="block text-xs text-muted">{{ f.portionText }} · {{ f.kcal }} kcal · {{ f.group?.name ?? 'Sin grupo' }}</span>
                 </span>
+                <app-gi-badge [value]="f.glycemicIndex" />
                 <app-badge [badge]="sourceLabels[f.source]" />
               </button>
             } @empty {

@@ -26,7 +26,7 @@ const TABS = [
   { key: 'antecedentes', label: 'Antecedentes' },
   { key: 'alimentacion', label: 'Historia alimentaria' },
   { key: 'medicacion', label: 'Medicación' },
-  { key: 'laboratorios', label: 'Laboratorios' },
+  { key: 'laboratorios', label: 'Exámenes' },
   { key: 'consultas', label: 'Consultas' },
   { key: 'planes', label: 'Planes' },
   { key: 'evolucion', label: 'Evolución' },

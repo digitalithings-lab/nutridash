@@ -1,5 +1,6 @@
+import { PatientFiles } from './patient-files';
 import { DialogService } from '../../shared/dialog';
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
 import { errorMessage } from '../../core/auth.interceptor';
@@ -197,11 +198,11 @@ export class MedicationsTab {
 // Pestaña de resultados de laboratorio.
 @Component({
   selector: 'app-labs-tab',
-  imports: [FormsModule, Icon, Empty, ErrorBanner, Modal],
+  imports: [FormsModule, Icon, Empty, ErrorBanner, Modal, PatientFiles],
   template: `
     <div class="card">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-lg font-extrabold">Laboratorios</h2>
+        <h2 class="text-lg font-extrabold">Exámenes de laboratorio</h2>
         <button class="btn-primary btn-sm" (click)="openForm(null)"><app-icon name="plus" /> Agregar resultado</button>
       </div>
       <app-error [message]="error()" />
@@ -218,6 +219,7 @@ export class MedicationsTab {
                 <th>Resultado</th>
                 <th>Referencia</th>
                 <th>Notas</th>
+                <th>Adjuntos</th>
                 <th class="w-24"><span class="sr-only">Acciones</span></th>
               </tr>
             </thead>
@@ -229,6 +231,12 @@ export class MedicationsTab {
                   <td class="whitespace-nowrap">{{ l.value }} {{ l.unit ?? '' }}</td>
                   <td class="text-muted">{{ l.reference ?? '—' }}</td>
                   <td class="max-w-xs text-muted">{{ l.notes ?? '' }}</td>
+                  <td class="whitespace-nowrap">
+                    @if (filesPanel.countByLab().get(l.id); as n) {
+                      <span class="chip bg-sky-100 text-sky-700">{{ n }} archivo{{ n === 1 ? '' : 's' }}</span>
+                    }
+                    <button class="btn-ghost btn-sm" (click)="attachTo(l)" title="Adjuntar archivo a este examen"><app-icon name="link" size="sm" /> Adjuntar</button>
+                  </td>
                   <td class="whitespace-nowrap text-right">
                     <button class="btn-ghost btn-sm" (click)="openForm(l)" aria-label="Editar"><app-icon name="edit" /></button>
                     <button class="btn-ghost btn-sm text-danger-500" (click)="remove(l)" aria-label="Eliminar"><app-icon name="trash" /></button>
@@ -240,6 +248,8 @@ export class MedicationsTab {
         </div>
       }
     </div>
+
+    <app-patient-files #filesPanel [patientId]="patient().id" [labs]="patient().labResults" />
 
     @if (editing()) {
       <app-modal [title]="editing()!.id ? 'Editar resultado' : 'Agregar resultado'" (closed)="editing.set(null)">
@@ -281,6 +291,14 @@ export class MedicationsTab {
   `,
 })
 export class LabsTab {
+  private readonly filesRef = viewChild.required<PatientFiles>('filesPanel');
+
+  // Preselecciona el examen en el panel de adjuntos y lleva la vista hasta él.
+  protected attachTo(l: LabResult) {
+    this.filesRef().selectLab(l.id);
+    document.querySelector('app-patient-files')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   private readonly api = inject(ApiService);
   private readonly dialog = inject(DialogService);
   readonly patient = input.required<Patient>();

@@ -15,6 +15,7 @@ import { StepMacros } from './step-macros';
 import { StepMeals } from './step-meals';
 import { StepMenu } from './step-menu';
 import { StepReview } from './step-review';
+import { ShoppingListDialog } from './shopping-list';
 
 const STEPS = [
   { key: 'energy', label: 'Energía', hint: 'Calorías objetivo' },
@@ -30,7 +31,7 @@ type StepKey = (typeof STEPS)[number]['key'];
 // Editor del plan alimentario: sigue el flujo clínico paso a paso con un resumen siempre visible.
 @Component({
   selector: 'app-plan-editor',
-  imports: [RouterLink, Icon, Badge, ErrorBanner, SkeletonCards, StepEnergy, StepMacros, StepExchanges, StepMeals, StepMenu, StepReview],
+  imports: [RouterLink, Icon, Badge, ErrorBanner, SkeletonCards, StepEnergy, StepMacros, StepExchanges, StepMeals, StepMenu, StepReview, ShoppingListDialog],
   providers: [PlanStore],
   template: `
     @if (store.plan(); as plan) {
@@ -44,6 +45,7 @@ type StepKey = (typeof STEPS)[number]['key'];
             <app-badge [badge]="statusLabels[plan.status]" />
           </div>
           <div class="flex flex-wrap gap-2">
+            <button class="btn-outline btn-sm" (click)="showShopping.set(true)"><app-icon name="list" size="sm" /> Lista del súper</button>
             <button class="btn-outline btn-sm" [disabled]="busy()" (click)="duplicate()"><app-icon name="copy" size="sm" /> Duplicar</button>
             @if (plan.status !== 'APPROVED') {
               <button class="btn-danger btn-sm" [disabled]="busy()" (click)="remove()"><app-icon name="trash" size="sm" /> Eliminar</button>
@@ -153,6 +155,9 @@ type StepKey = (typeof STEPS)[number]['key'];
           </p>
         </aside>
       </div>
+      @if (showShopping()) {
+        <app-shopping-list [planId]="plan.id" (closed)="showShopping.set(false)" />
+      }
     } @else if (store.error()) {
       <app-error [message]="store.error()" />
     } @else {
@@ -174,6 +179,7 @@ export class PlanEditor {
   protected readonly fmt = fmtServings;
   protected readonly step = signal<StepKey>('energy');
   protected readonly busy = signal(false);
+  protected readonly showShopping = signal(false);
   protected readonly actionError = signal<string | null>(null);
 
   protected readonly currentStep = computed(() => STEPS.find((s) => s.key === this.step())!);

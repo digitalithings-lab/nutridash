@@ -6,6 +6,7 @@ import { foodSourceLabels } from '../../core/format';
 import { ExchangeGroup, ExchangeSystem, Food } from '../../core/types';
 import { Icon } from '../../shared/icon';
 import { Badge, Empty, ErrorBanner, PageHeader, Tabs } from '../../shared/ui';
+import { FoodThumb, GiBadge } from '../../shared/food';
 import { FoodForm } from '../catalog/food-form';
 
 interface GroupRow {
@@ -24,7 +25,7 @@ const FIELDS = ['name', 'kcal', 'choG', 'proG', 'fatG', 'portionHint'] as const;
 
 @Component({
   selector: 'app-admin-catalog',
-  imports: [FormsModule, Icon, Badge, Empty, ErrorBanner, PageHeader, Tabs, FoodForm],
+  imports: [FormsModule, Icon, Badge, Empty, ErrorBanner, PageHeader, Tabs, FoodForm, FoodThumb, GiBadge],
   template: `
     <app-page-header title="Catálogo" subtitle="Equivalencias por grupo y alimentos del catálogo general." />
 
@@ -131,8 +132,13 @@ const FIELDS = ['name', 'kcal', 'choG', 'proG', 'fatG', 'portionHint'] as const;
               @for (f of foods(); track f.id) {
                 <tr>
                   <td>
-                    <p class="font-bold">{{ f.name }}</p>
-                    <p class="text-xs text-muted">{{ f.category }}</p>
+                    <div class="flex items-center gap-3">
+                      <app-food-thumb [imageId]="f.imageId" [name]="f.name" [color]="f.group?.color" [size]="36" />
+                      <div>
+                        <p class="flex flex-wrap items-center gap-2 font-bold">{{ f.name }} <app-gi-badge [value]="f.glycemicIndex" /></p>
+                        <p class="text-xs text-muted">{{ f.category }}</p>
+                      </div>
+                    </div>
                   </td>
                   <td>
                     @if (f.group) {
