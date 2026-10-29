@@ -69,15 +69,15 @@ type StepKey = (typeof STEPS)[number]['key'];
         @for (s of steps; track s.key; let i = $index) {
           <button
             class="cursor-pointer rounded-xl border px-3 py-2.5 text-left transition"
-            [class]="step() === s.key ? 'border-brand-500 bg-brand-600 text-white shadow-soft' : 'border-line bg-white hover:border-brand-200'"
+            [class]="step() === s.key ? 'border-brand-500 bg-brand-600 text-white shadow-soft' : 'border-line bg-surface hover:border-brand-200'"
             [attr.aria-current]="step() === s.key ? 'step' : null"
             (click)="go(s.key)"
           >
             <span class="flex items-center gap-2">
-              <span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-extrabold" [class]="step() === s.key ? 'bg-white text-brand-700' : 'bg-brand-100 text-brand-700'">{{ i + 1 }}</span>
+              <span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-extrabold" [class]="step() === s.key ? 'bg-surface text-brand-700' : 'bg-brand-100 text-brand-700'">{{ i + 1 }}</span>
               <span class="truncate text-sm font-bold">{{ s.label }}</span>
             </span>
-            <span class="mt-0.5 hidden truncate text-xs lg:block" [class]="step() === s.key ? 'text-brand-100' : 'text-muted'">{{ s.hint }}</span>
+            <span class="mt-0.5 hidden truncate text-xs lg:block" [class]="step() === s.key ? 'text-white/85' : 'text-muted'">{{ s.hint }}</span>
           </button>
         }
       </nav>
@@ -98,15 +98,15 @@ type StepKey = (typeof STEPS)[number]['key'];
         </section>
 
         <aside class="space-y-4 xl:sticky xl:top-6 xl:self-start">
-          <div class="rounded-2xl bg-brand-700 p-5 text-white shadow-card">
-            <p class="text-xs font-bold tracking-wide text-brand-200 uppercase">Objetivo diario</p>
-            <p class="text-4xl font-extrabold">{{ plan.target.kcal }} <span class="text-base font-semibold text-brand-200">kcal</span></p>
-            <p class="mt-1 text-xs text-brand-100">{{ energySummary(plan) }}</p>
+          <div class="rounded-2xl bg-hero p-5 text-white shadow-card">
+            <p class="text-xs font-bold tracking-wide text-white/70 uppercase">Objetivo diario</p>
+            <p class="text-4xl font-extrabold">{{ plan.target.kcal }} <span class="text-base font-semibold text-white/70">kcal</span></p>
+            <p class="mt-1 text-xs text-white/85">{{ energySummary(plan) }}</p>
             <div class="mt-4 grid grid-cols-3 gap-2 text-center">
               @for (m of macroCards(); track m.label) {
                 <div class="rounded-xl bg-white/10 px-2 py-2">
                   <p class="text-lg font-extrabold">{{ m.grams }}<span class="text-xs">g</span></p>
-                  <p class="text-[11px] text-brand-100">{{ m.label }} {{ m.pct }}%</p>
+                  <p class="text-[11px] text-white/85">{{ m.label }} {{ m.pct }}%</p>
                 </div>
               }
             </div>

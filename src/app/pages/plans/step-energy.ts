@@ -38,7 +38,7 @@ const OCCUPATIONS = ['Sedentaria (oficina, estudio)', 'Ligera (de pie, caminar p
         <button
           type="button"
           class="cursor-pointer rounded-lg px-4 py-2 text-sm font-bold transition"
-          [class]="method() === m.value ? 'bg-white text-brand-700 shadow-soft' : 'text-muted hover:text-ink'"
+          [class]="method() === m.value ? 'bg-surface text-brand-700 shadow-soft' : 'text-muted hover:text-ink'"
           [disabled]="store.readonly()"
           (click)="method.set(m.value)"
         >
@@ -217,7 +217,7 @@ const OCCUPATIONS = ['Sedentaria (oficina, estudio)', 'Ligera (de pie, caminar p
           <button
             type="button"
             class="cursor-pointer rounded-2xl border-2 p-4 text-left transition disabled:cursor-not-allowed"
-            [class]="goal() === g.value ? 'border-brand-500 bg-brand-50' : 'border-line bg-white hover:border-line-strong'"
+            [class]="goal() === g.value ? 'border-brand-500 bg-brand-50' : 'border-line bg-surface hover:border-line-strong'"
             [disabled]="store.readonly()"
             (click)="chooseGoal(g.value)"
           >
@@ -250,8 +250,8 @@ const OCCUPATIONS = ['Sedentaria (oficina, estudio)', 'Ligera (de pie, caminar p
           <p class="text-2xl font-extrabold">{{ preview().result?.totalKcal ?? '—' }} <span class="text-sm font-semibold text-muted">kcal</span></p>
         </div>
         <div class="rounded-2xl bg-brand-600 p-4 text-white">
-          <p class="text-xs font-bold text-brand-100 uppercase">Objetivo calórico</p>
-          <p class="text-2xl font-extrabold">{{ preview().result?.targetKcal ?? '—' }} <span class="text-sm font-semibold text-brand-100">kcal</span></p>
+          <p class="text-xs font-bold text-white/85 uppercase">Objetivo calórico</p>
+          <p class="text-2xl font-extrabold">{{ preview().result?.targetKcal ?? '—' }} <span class="text-sm font-semibold text-white/85">kcal</span></p>
         </div>
       </div>
       @if (preview().result) {

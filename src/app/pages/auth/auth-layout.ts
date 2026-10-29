@@ -5,14 +5,14 @@ import { Component, input } from '@angular/core';
   selector: 'app-auth-layout',
   template: `
     <div class="grid min-h-screen lg:grid-cols-2">
-      <section class="relative hidden flex-col justify-between overflow-hidden bg-brand-700 p-12 text-white lg:flex">
+      <section class="relative hidden flex-col justify-between overflow-hidden bg-hero p-12 text-white lg:flex">
         <div class="flex items-center gap-3">
           <img src="favicon.svg" alt="" class="size-10 rounded-xl ring-2 ring-white/30" />
           <span class="text-2xl font-extrabold">NutriPro</span>
         </div>
         <div class="relative z-10">
           <h2 class="text-4xl leading-tight font-extrabold">Tu consulta nutricional,<br />en un solo lugar.</h2>
-          <p class="mt-4 max-w-md text-lg text-brand-100">
+          <p class="mt-4 max-w-md text-lg text-white/85">
             Evaluación, cálculo de calorías, intercambios tradicionales y de Panamá, planes alimentarios y seguimiento.
             Tú decides; NutriPro hace las cuentas.
           </p>
@@ -22,8 +22,8 @@ import { Component, input } from '@angular/core';
             }
           </ul>
         </div>
-        <p class="text-sm text-brand-200">Expedientes privados para cada nutricionista</p>
-        <div class="absolute -right-24 -bottom-24 size-96 rounded-full bg-brand-600/60"></div>
+        <p class="text-sm text-white/70">Expedientes privados para cada nutricionista</p>
+        <div class="absolute -right-24 -bottom-24 size-96 rounded-full bg-hero-soft/50"></div>
       </section>
 
       <section class="flex items-center justify-center px-6 py-12">

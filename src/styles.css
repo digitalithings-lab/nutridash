@@ -1,56 +1,191 @@
 @import 'tailwindcss';
 
-/* Paleta de NutriPro: verde azulado de marca, fondos menta muy claros y acentos por grupo de alimentos. */
-@theme {
+/* El modo oscuro se activa con la clase .dark en <html> (ver ThemeService). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Paleta de NutriPro con variables semánticas: cada color se define una vez para el modo claro
+ * y otra para el oscuro. Todas las combinaciones de texto cumplen contraste WCAG AA (≥ 4.5:1).
+ * Proporción 60/30/10: superficies neutras, estructura en verde azulado y acentos para acciones.
+ */
+:root {
+  color-scheme: light;
+
+  --c-canvas: #f3f7f6;
+  --c-surface: #ffffff;
+  --c-mist: #e9f2ef;
+  --c-line: #e1eae7;
+  --c-line-strong: #bfd0ca;
+  --c-ink: #1f2d2a;
+  --c-muted: #56685f;
+  --c-soft: #647570;
+
+  --c-brand-50: #eef7f4;
+  --c-brand-100: #d8eee7;
+  --c-brand-200: #b2ddcf;
+  --c-brand-500: #2f8f7a;
+  --c-brand-600: #26786a;
+  --c-brand-700: #1d5e53;
+
+  --c-coral-100: #fcebe5;
+  --c-coral-500: #e07a5f;
+  --c-coral-700: #9a4330;
+
+  --c-amber-100: #fbf1d9;
+  --c-amber-500: #d9a441;
+  --c-amber-700: #7d5810;
+
+  --c-sky-100: #e5effa;
+  --c-sky-500: #4f8fd1;
+  --c-sky-700: #2f6aa8;
+
+  --c-violet-100: #eeeafb;
+  --c-violet-500: #6b54c4;
+
+  --c-danger-100: #fbe3dd;
+  --c-danger-500: #b23f29;
+
+  --c-shadow: 31 45 42;
+}
+
+:root.dark {
+  color-scheme: dark;
+
+  --c-canvas: #0d1513;
+  --c-surface: #151f1c;
+  --c-mist: #1c2a26;
+  --c-line: #24332f;
+  --c-line-strong: #33463f;
+  --c-ink: #e6efec;
+  --c-muted: #9db0a9;
+  --c-soft: #8a9c96;
+
+  --c-brand-50: #10241f;
+  --c-brand-100: #133a32;
+  --c-brand-200: #1d5a4c;
+  --c-brand-500: #3aa88f;
+  --c-brand-600: #26786a;
+  --c-brand-700: #7fd8c3;
+
+  --c-coral-100: #3b1f17;
+  --c-coral-500: #ef7a5c;
+  --c-coral-700: #f2a189;
+
+  --c-amber-100: #3a2e12;
+  --c-amber-500: #e2aa45;
+  --c-amber-700: #f3c46b;
+
+  --c-sky-100: #13283d;
+  --c-sky-500: #5b9ee0;
+  --c-sky-700: #8fbdf0;
+
+  --c-violet-100: #251f42;
+  --c-violet-500: #b3a3f0;
+
+  --c-danger-100: #3d1a14;
+  --c-danger-500: #f19a87;
+
+  --c-shadow: 0 0 0;
+}
+
+@theme inline {
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
-  --color-canvas: #f3f7f6;
-  --color-mist: #e9f2ef;
-  --color-line: #e1eae7;
-  --color-line-strong: #bfd0ca;
-  --color-ink: #1f2d2a;
-  --color-muted: #63766f;
-  --color-soft: #97a8a2;
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-mist: var(--c-mist);
+  --color-line: var(--c-line);
+  --color-line-strong: var(--c-line-strong);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-soft: var(--c-soft);
 
-  --color-brand-50: #eef7f4;
-  --color-brand-100: #d8eee7;
-  --color-brand-200: #b2ddcf;
-  --color-brand-500: #2f8f7a;
-  --color-brand-600: #26786a;
-  --color-brand-700: #1d5e53;
+  --color-brand-50: var(--c-brand-50);
+  --color-brand-100: var(--c-brand-100);
+  --color-brand-200: var(--c-brand-200);
+  --color-brand-500: var(--c-brand-500);
+  --color-brand-600: var(--c-brand-600);
+  --color-brand-700: var(--c-brand-700);
 
-  --color-coral-100: #fcebe5;
-  --color-coral-500: #e07a5f;
-  --color-coral-700: #b5573e;
+  --color-coral-100: var(--c-coral-100);
+  --color-coral-500: var(--c-coral-500);
+  --color-coral-700: var(--c-coral-700);
 
-  --color-amber-100: #fbf1d9;
-  --color-amber-500: #d9a441;
-  --color-amber-700: #9b7019;
+  --color-amber-100: var(--c-amber-100);
+  --color-amber-500: var(--c-amber-500);
+  --color-amber-700: var(--c-amber-700);
 
-  --color-sky-100: #e5effa;
-  --color-sky-500: #4f8fd1;
-  --color-sky-700: #2f6aa8;
+  --color-sky-100: var(--c-sky-100);
+  --color-sky-500: var(--c-sky-500);
+  --color-sky-700: var(--c-sky-700);
 
-  --color-violet-100: #eeeafb;
-  --color-violet-500: #8b74d6;
+  --color-violet-100: var(--c-violet-100);
+  --color-violet-500: var(--c-violet-500);
 
-  --color-danger-100: #fbe3dd;
-  --color-danger-500: #c8553d;
+  --color-danger-100: var(--c-danger-100);
+  --color-danger-500: var(--c-danger-500);
 
-  --shadow-card: 0 1px 2px rgb(31 45 42 / 0.04), 0 6px 20px rgb(31 45 42 / 0.06);
-  --shadow-soft: 0 1px 3px rgb(31 45 42 / 0.06);
+  /* Colores fijos en ambos modos: tarjetas destacadas y acciones destructivas con texto blanco. */
+  --color-hero: #1d5e53;
+  --color-hero-soft: #2f8f7a;
+  --color-danger-solid: #b23f29;
+
+  --shadow-card: 0 1px 2px rgb(var(--c-shadow) / 0.05), 0 6px 20px rgb(var(--c-shadow) / 0.07);
+  --shadow-soft: 0 1px 3px rgb(var(--c-shadow) / 0.08);
+
+  --animate-fade-in: fade-in 160ms ease-out both;
+  --animate-pop-in: pop-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+@layer base {
+  /* Anillo de enfoque visible solo al navegar con teclado, en todo lo interactivo. */
+  :where(a, button, summary, [role='tab'], [tabindex]):focus-visible {
+    outline: 2px solid var(--c-brand-500);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+
+  ::selection {
+    background: var(--c-brand-200);
+  }
+
+  /* Quien prefiere menos movimiento no ve animaciones ni transiciones largas. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 /* En Tailwind 4 las clases propias se declaran con @utility para poder combinarlas. */
 @utility card {
-  @apply rounded-2xl border border-line bg-white p-5 shadow-card;
+  @apply rounded-2xl border border-line bg-surface p-5 shadow-card;
 }
 @utility btn {
-  @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition
-    disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold
+    transition-all duration-200 ease-in-out select-none active:scale-[0.98]
+    disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
 }
 @utility btn-primary {
-  @apply btn bg-brand-600 text-white shadow-soft hover:bg-brand-700;
+  @apply btn bg-brand-600 text-white shadow-soft hover:bg-hero hover:shadow-card;
 }
 @utility btn-secondary {
   @apply btn bg-brand-100 text-brand-700 hover:bg-brand-200;
@@ -59,7 +194,7 @@
   @apply btn text-brand-700 hover:bg-brand-50;
 }
 @utility btn-outline {
-  @apply btn border border-line-strong bg-white text-ink hover:bg-canvas;
+  @apply btn border border-line-strong bg-surface text-ink hover:border-brand-500 hover:bg-canvas;
 }
 @utility btn-danger {
   @apply btn bg-danger-100 text-danger-500 hover:opacity-80;
@@ -67,10 +202,11 @@
 @utility btn-sm {
   @apply px-3 py-1.5 text-xs;
 }
-/* Campos blancos con borde marcado: nunca se confunden con el fondo. */
+/* Campos con borde marcado: nunca se confunden con el fondo. */
 @utility input {
-  @apply w-full rounded-xl border-[1.5px] border-line-strong bg-white px-3.5 py-2.5 text-sm text-ink outline-none
-    placeholder:text-soft focus:border-brand-500 focus:ring-3 focus:ring-brand-100 disabled:bg-canvas disabled:text-muted;
+  @apply w-full rounded-xl border-[1.5px] border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink outline-none
+    transition-colors duration-200 placeholder:text-soft hover:border-soft focus:border-brand-500 focus:ring-3 focus:ring-brand-100
+    disabled:bg-canvas disabled:text-muted aria-invalid:border-danger-500;
 }
 @utility label {
   @apply mb-1.5 block text-xs font-bold tracking-wide text-muted uppercase;
@@ -88,6 +224,9 @@
   }
   & td {
     @apply border-b border-line px-3 py-3 align-middle;
+  }
+  & tbody tr {
+    @apply transition-colors duration-150 hover:bg-canvas;
   }
   & tr:last-child td {
     @apply border-b-0;

@@ -18,7 +18,7 @@ import { ChecksTable } from './checks-table';
         <button
           type="button"
           class="cursor-pointer rounded-2xl border-2 p-4 text-left transition disabled:cursor-not-allowed"
-          [class]="mode() === m.value ? 'border-brand-500 bg-brand-50' : 'border-line bg-white hover:border-line-strong'"
+          [class]="mode() === m.value ? 'border-brand-500 bg-brand-50' : 'border-line bg-surface hover:border-line-strong'"
           [disabled]="store.readonly() || store.saving()"
           (click)="changeMode(m.value)"
         >

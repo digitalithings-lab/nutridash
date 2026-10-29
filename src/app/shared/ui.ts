@@ -76,9 +76,9 @@ export class ErrorBanner {
   selector: 'app-modal',
   imports: [Icon],
   template: `
-    <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center" (click)="closed.emit()">
+    <div class="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/50 p-4 backdrop-blur-[2px] sm:items-center" (click)="closed.emit()">
       <div
-        class="max-h-[90vh] w-full overflow-y-auto rounded-2xl bg-white p-6 shadow-card" [class]="wide() ? 'max-w-3xl' : 'max-w-xl'"
+        class="max-h-[90vh] w-full animate-pop-in overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-card" [class]="wide() ? 'max-w-3xl' : 'max-w-xl'"
         role="dialog"
         aria-modal="true"
         [attr.aria-label]="title()"

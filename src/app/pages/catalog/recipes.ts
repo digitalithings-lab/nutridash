@@ -71,7 +71,7 @@ interface RecipeModel {
                 <p class="label">Intercambios por ración</p>
                 <div class="flex flex-wrap gap-1.5">
                   @for (x of exchangeList(r); track x.key) {
-                    <span class="chip border border-line bg-white text-ink">
+                    <span class="chip border border-line bg-surface text-ink">
                       <span class="size-2 rounded-full" [style.background-color]="x.color"></span>{{ x.amount }} {{ x.name }}
                     </span>
                   }
@@ -120,7 +120,7 @@ interface RecipeModel {
                 <div class="relative">
                   <input class="input" placeholder="Buscar alimento para añadir…" name="foodSearch" autocomplete="off" [(ngModel)]="foodSearch" (ngModelChange)="searchFoods()" />
                   @if (foodResults().length) {
-                    <ul class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-line bg-white shadow-card">
+                    <ul class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-line bg-surface shadow-card">
                       @for (food of foodResults(); track food.id) {
                         <li>
                           <button type="button" class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-mist" (click)="addIngredient(food)">

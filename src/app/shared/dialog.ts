@@ -86,9 +86,9 @@ export class DialogService {
   imports: [FormsModule, Icon],
   template: `
     @if (dialog.current(); as d) {
-      <div class="fixed inset-0 z-[60] flex items-end justify-center bg-ink/40 p-4 backdrop-blur-[2px] sm:items-center" (click)="dialog.close(d.kind === 'prompt' ? null : false)">
+      <div class="fixed inset-0 z-[60] flex animate-fade-in items-end justify-center bg-black/50 p-4 backdrop-blur-[2px] sm:items-center" (click)="dialog.close(d.kind === 'prompt' ? null : false)">
         <div
-          class="w-full max-w-md rounded-2xl bg-white p-6 shadow-card"
+          class="w-full max-w-md animate-pop-in rounded-2xl border border-line bg-surface p-6 shadow-card"
           role="alertdialog"
           aria-modal="true"
           [attr.aria-label]="d.title"
@@ -148,7 +148,7 @@ export class DialogService {
             <button type="button" class="btn-outline" (click)="dialog.close(d.kind === 'prompt' ? null : false)">{{ d.cancelLabel }}</button>
             <button
               type="button"
-              [class]="d.tone === 'danger' ? 'btn bg-danger-500 text-white hover:opacity-90' : 'btn-primary'"
+              [class]="d.tone === 'danger' ? 'btn bg-danger-solid text-white hover:opacity-90' : 'btn-primary'"
               (click)="dialog.close(d.kind === 'prompt' ? text.trim() : true)"
             >
               {{ d.confirmLabel }}

@@ -36,13 +36,13 @@ const SOURCE_TABS = [
       </div>
       @if (groups().length) {
         <div class="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-          <button class="chip shrink-0 cursor-pointer border" [class]="!groupKey() ? 'border-brand-600 bg-brand-600 text-white' : 'border-line bg-white text-muted'" (click)="setGroup(null)">
+          <button class="chip shrink-0 cursor-pointer border" [class]="!groupKey() ? 'border-brand-600 bg-brand-600 text-white' : 'border-line bg-surface text-muted'" (click)="setGroup(null)">
             Todos los grupos
           </button>
           @for (g of groups(); track g.key) {
             <button
               class="chip shrink-0 cursor-pointer border"
-              [class]="groupKey() === g.key ? 'text-white' : 'border-line bg-white text-ink'"
+              [class]="groupKey() === g.key ? 'text-white' : 'border-line bg-surface text-ink'"
               [style.background-color]="groupKey() === g.key ? g.color : null"
               [style.border-color]="groupKey() === g.key ? g.color : null"
               (click)="setGroup(g.key)"

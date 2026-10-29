@@ -70,7 +70,7 @@ const CALCULATOR_FAT_METHODS = BODY_FAT_METHODS.filter((m) => m.value !== 'NAVY'
             <div class="relative">
               <input class="input" placeholder="Buscar paciente (opcional)…" [ngModel]="search()" (ngModelChange)="onSearch($event)" aria-label="Buscar paciente" />
               @if (results().length) {
-                <ul class="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-line bg-white shadow-card">
+                <ul class="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-line bg-surface shadow-card">
                   @for (r of results(); track r.id) {
                     <li>
                       <button class="w-full cursor-pointer px-4 py-2.5 text-left hover:bg-canvas" (click)="selectPatient(r)">
@@ -96,7 +96,7 @@ const CALCULATOR_FAT_METHODS = BODY_FAT_METHODS.filter((m) => m.value !== 'NAVY'
                   <button
                     type="button"
                     class="flex-1 cursor-pointer rounded-lg py-2 text-sm font-bold"
-                    [class]="sex() === s.value ? 'bg-white text-brand-700 shadow-soft' : 'text-muted'"
+                    [class]="sex() === s.value ? 'bg-surface text-brand-700 shadow-soft' : 'text-muted'"
                     (click)="sex.set(s.value)"
                   >
                     {{ s.label }}
@@ -196,26 +196,26 @@ const CALCULATOR_FAT_METHODS = BODY_FAT_METHODS.filter((m) => m.value !== 'NAVY'
 
       <!-- Resultados -->
       <aside class="space-y-5 xl:sticky xl:top-6 xl:self-start">
-        <section class="rounded-2xl bg-brand-700 p-5 text-white shadow-card">
-          <p class="text-xs font-bold tracking-wide text-brand-200 uppercase">Índice de masa corporal</p>
+        <section class="rounded-2xl bg-hero p-5 text-white shadow-card">
+          <p class="text-xs font-bold tracking-wide text-white/70 uppercase">Índice de masa corporal</p>
           @if (bmi(); as b) {
-            <p class="text-4xl font-extrabold">{{ b.value }} <span class="text-base font-semibold text-brand-200">kg/m²</span></p>
-            <p class="mt-1 font-bold" [class.text-amber-100]="b.alert">{{ b.status }}</p>
+            <p class="text-4xl font-extrabold">{{ b.value }} <span class="text-base font-semibold text-white/70">kg/m²</span></p>
+            <p class="mt-1 font-bold" [class.text-[#ffe1a3]]="b.alert">{{ b.status }}</p>
             <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
-              <div class="h-full rounded-full bg-white" [style.width.%]="b.bar"></div>
+              <div class="h-full rounded-full bg-surface" [style.width.%]="b.bar"></div>
             </div>
-            <div class="mt-1 flex justify-between text-[10px] text-brand-200"><span>16</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>
+            <div class="mt-1 flex justify-between text-[10px] text-white/70"><span>16</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>
           } @else {
-            <p class="mt-2 text-sm text-brand-100">Escribe peso y talla.</p>
+            <p class="mt-2 text-sm text-white/85">Escribe peso y talla.</p>
           }
           @if (weightRefs().length) {
             <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
               @for (r of weightRefs(); track r.label) {
                 <div class="rounded-xl bg-white/10 px-3 py-2">
-                  <p class="text-[11px] text-brand-200">{{ r.label }}</p>
+                  <p class="text-[11px] text-white/70">{{ r.label }}</p>
                   <p class="font-bold">{{ r.value }}</p>
                   @if (r.formula) {
-                    <p class="text-[10px] text-brand-200">{{ r.formula }}</p>
+                    <p class="text-[10px] text-white/70">{{ r.formula }}</p>
                   }
                 </div>
               }

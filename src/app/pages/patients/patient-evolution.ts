@@ -161,7 +161,7 @@ const COMPARE_ROWS: { key: keyof EvolutionPoint; label: string; unit: string; lo
             <h2 class="text-lg font-extrabold">Evolución de {{ metric().label.toLowerCase() }}</h2>
             <div class="flex flex-wrap gap-1 rounded-xl bg-mist p-1 text-xs font-bold" role="group" aria-label="Medida">
               @for (m of metrics; track m.key) {
-                <button class="cursor-pointer rounded-lg px-2.5 py-1.5" [class]="metricKey() === m.key ? 'bg-white text-ink shadow-soft' : 'text-muted'" (click)="metricKey.set(m.key)">
+                <button class="cursor-pointer rounded-lg px-2.5 py-1.5" [class]="metricKey() === m.key ? 'bg-surface text-ink shadow-soft' : 'text-muted'" (click)="metricKey.set(m.key)">
                   {{ m.label }}
                 </button>
               }

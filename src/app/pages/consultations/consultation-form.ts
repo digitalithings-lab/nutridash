@@ -122,7 +122,7 @@ interface PatientInfo {
                 <span class="label">Tipo</span>
                 <div class="flex rounded-xl bg-mist p-1 text-sm font-bold">
                   @for (t of typeOptions; track t.value) {
-                    <button type="button" class="flex-1 cursor-pointer rounded-lg px-3 py-1.5" [class]="form.type === t.value ? 'bg-white text-ink shadow-soft' : 'text-muted'" (click)="form.type = t.value">
+                    <button type="button" class="flex-1 cursor-pointer rounded-lg px-3 py-1.5" [class]="form.type === t.value ? 'bg-surface text-ink shadow-soft' : 'text-muted'" (click)="form.type = t.value">
                       {{ t.label }}
                     </button>
                   }

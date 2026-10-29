@@ -67,7 +67,7 @@ function timeKey(d: Date): string {
                 <span class="mt-0.5 flex items-center gap-0.5">
                   @if (cell.count <= 3) {
                     @for (d of dots(cell.count); track d) {
-                      <span class="size-1.5 rounded-full" [class]="selected() === cell.key ? 'bg-white' : 'bg-brand-500'"></span>
+                      <span class="size-1.5 rounded-full" [class]="selected() === cell.key ? 'bg-surface' : 'bg-brand-500'"></span>
                     }
                   } @else {
                     <span class="text-[10px]" [class]="selected() === cell.key ? 'text-white' : 'text-brand-700'">{{ cell.count }}</span>

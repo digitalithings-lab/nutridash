@@ -82,8 +82,8 @@ function clean(value: Record<string, unknown>, editing: boolean): Record<string,
       <app-modal [title]="editing()!.id ? 'Editar medicación' : 'Agregar medicación'" (closed)="editing.set(null)">
         <form class="space-y-4" (ngSubmit)="save()">
           <div class="flex rounded-xl bg-mist p-1 text-sm font-bold">
-            <button type="button" class="flex-1 cursor-pointer rounded-lg px-3 py-1.5" [class]="!form.isSupplement ? 'bg-white shadow-soft' : 'text-muted'" (click)="form.isSupplement = false">Medicamento</button>
-            <button type="button" class="flex-1 cursor-pointer rounded-lg px-3 py-1.5" [class]="form.isSupplement ? 'bg-white shadow-soft' : 'text-muted'" (click)="form.isSupplement = true">Suplemento</button>
+            <button type="button" class="flex-1 cursor-pointer rounded-lg px-3 py-1.5" [class]="!form.isSupplement ? 'bg-surface shadow-soft' : 'text-muted'" (click)="form.isSupplement = false">Medicamento</button>
+            <button type="button" class="flex-1 cursor-pointer rounded-lg px-3 py-1.5" [class]="form.isSupplement ? 'bg-surface shadow-soft' : 'text-muted'" (click)="form.isSupplement = true">Suplemento</button>
           </div>
           <div>
             <label class="label" for="med-name">Nombre *</label>

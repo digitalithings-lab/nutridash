@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../core/auth.service';
+import { ThemeService } from '../core/theme.service';
 import { initials } from '../core/format';
 import { Icon } from '../shared/icon';
 
@@ -37,17 +38,17 @@ const ADMIN_NAV: NavItem[] = [
   template: `
     <div class="min-h-screen lg:flex">
       <!-- Barra superior en móvil -->
-      <div class="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-white px-4 py-3 lg:hidden">
+      <div class="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-surface px-4 py-3 lg:hidden">
         <a routerLink="/" class="flex items-center gap-2 text-lg font-extrabold text-brand-700">
           <img src="favicon.svg" alt="" class="size-7" /> NutriPro
         </a>
-        <button class="rounded-lg p-2 hover:bg-mist" (click)="menuOpen.set(!menuOpen())" aria-label="Abrir menú">
+        <button class="rounded-lg p-2 hover:bg-mist" (click)="menuOpen.set(!menuOpen())" aria-label="Abrir menú" [attr.aria-expanded]="menuOpen()">
           <app-icon name="menu" />
         </button>
       </div>
 
       <aside
-        class="fixed inset-y-0 left-0 z-40 w-64 flex-col border-r border-line bg-white px-4 py-6 lg:sticky lg:top-0 lg:flex lg:h-screen"
+        class="fixed inset-y-0 left-0 z-40 w-64 flex-col border-r border-line bg-surface px-4 py-6 lg:sticky lg:top-0 lg:flex lg:h-screen"
         [class.flex]="menuOpen()"
         [class.hidden]="!menuOpen()"
       >
@@ -63,9 +64,10 @@ const ADMIN_NAV: NavItem[] = [
           @for (item of nav(); track item.link) {
             <a
               [routerLink]="item.link"
-              routerLinkActive="bg-brand-50 !text-brand-700"
+              routerLinkActive="bg-brand-50 !text-brand-700 font-bold"
+              ariaCurrentWhenActive="page"
               [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-              class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted transition hover:bg-canvas hover:text-ink"
+              class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted transition-colors duration-200 hover:bg-canvas hover:text-ink"
               (click)="menuOpen.set(false)"
             >
               <app-icon [name]="item.icon" />
@@ -82,14 +84,22 @@ const ADMIN_NAV: NavItem[] = [
             <p class="truncate text-sm font-bold">{{ auth.user()?.fullName }}</p>
             <p class="truncate text-xs text-muted">{{ auth.user()?.email }}</p>
           </div>
-          <button class="rounded-lg p-2 text-muted hover:bg-mist hover:text-ink" (click)="auth.logout()" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <button
+            class="rounded-lg p-2 text-muted transition-colors hover:bg-mist hover:text-ink"
+            (click)="theme.cycle()"
+            [attr.aria-label]="themeLabel()"
+            [title]="themeLabel()"
+          >
+            <app-icon [name]="themeIcon()" />
+          </button>
+          <button class="rounded-lg p-2 text-muted transition-colors hover:bg-mist hover:text-ink" (click)="auth.logout()" aria-label="Cerrar sesión" title="Cerrar sesión">
             <app-icon name="logout" />
           </button>
         </div>
       </aside>
 
       @if (menuOpen()) {
-        <div class="fixed inset-0 z-30 bg-ink/30 lg:hidden" (click)="menuOpen.set(false)"></div>
+        <div class="fixed inset-0 z-30 bg-black/40 lg:hidden" (click)="menuOpen.set(false)"></div>
       }
 
       <main class="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
@@ -100,7 +110,12 @@ const ADMIN_NAV: NavItem[] = [
 })
 export class Shell {
   protected readonly auth = inject(AuthService);
+  protected readonly theme = inject(ThemeService);
   protected readonly menuOpen = signal(false);
+  protected readonly themeIcon = computed(() => ({ system: 'monitor', light: 'sun', dark: 'moon' })[this.theme.mode()]);
+  protected readonly themeLabel = computed(
+    () => ({ system: 'Tema: automático (toca para claro)', light: 'Tema: claro (toca para oscuro)', dark: 'Tema: oscuro (toca para automático)' })[this.theme.mode()],
+  );
   protected readonly nav = computed(() => (this.auth.isAdmin() ? ADMIN_NAV : NUTRITIONIST_NAV));
   protected readonly userInitials = computed(() => initials(this.auth.user()?.fullName ?? ''));
 }

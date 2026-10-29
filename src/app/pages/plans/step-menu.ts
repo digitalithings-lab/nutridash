@@ -109,7 +109,7 @@ type PickerTab = 'foods' | 'recipes' | 'custom';
       <app-modal [title]="'Agregar a ' + p.meal.name" [wide]="true" (closed)="picker.set(null)">
         <div class="mb-4 inline-flex rounded-xl bg-mist p-1">
           @for (t of tabs; track t.key) {
-            <button class="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-bold" [class]="pickerTab() === t.key ? 'bg-white text-brand-700 shadow-soft' : 'text-muted'" (click)="pickerTab.set(t.key)">
+            <button class="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-bold" [class]="pickerTab() === t.key ? 'bg-surface text-brand-700 shadow-soft' : 'text-muted'" (click)="pickerTab.set(t.key)">
               {{ t.label }}
             </button>
           }
@@ -117,9 +117,9 @@ type PickerTab = 'foods' | 'recipes' | 'custom';
 
         @if (pickerTab() === 'foods') {
           <div class="mb-3 flex flex-wrap gap-1.5">
-            <button class="chip cursor-pointer" [class]="!groupFilter() ? 'bg-ink text-white' : 'bg-mist text-muted'" (click)="setGroup(null)">Todos</button>
+            <button class="chip cursor-pointer" [class]="!groupFilter() ? 'bg-brand-600 text-white' : 'bg-mist text-muted'" (click)="setGroup(null)">Todos</button>
             @for (c of coverage(p.meal); track c.key) {
-              <button class="chip cursor-pointer" [class]="groupFilter() === c.key ? 'bg-ink text-white' : 'bg-mist text-muted'" (click)="setGroup(c.key)">
+              <button class="chip cursor-pointer" [class]="groupFilter() === c.key ? 'bg-brand-600 text-white' : 'bg-mist text-muted'" (click)="setGroup(c.key)">
                 <span class="size-2 rounded-full" [style.background]="store.groupColor(c.key)"></span>{{ c.short }}
                 @if (c.state === 'missing') {
                   <span class="text-coral-700">· faltan {{ fmt(c.planned - c.menu) }}</span>

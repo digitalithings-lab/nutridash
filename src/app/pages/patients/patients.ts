@@ -30,10 +30,10 @@ import { PatientForm, PatientFormValue } from './patient-form';
         />
       </label>
       <div class="flex rounded-xl bg-mist p-1 text-sm font-bold" role="group" aria-label="Filtrar pacientes">
-        <button class="cursor-pointer rounded-lg px-3 py-1.5" [class]="!archived() ? 'bg-white text-ink shadow-soft' : 'text-muted'" (click)="setArchived(false)">
+        <button class="cursor-pointer rounded-lg px-3 py-1.5" [class]="!archived() ? 'bg-surface text-ink shadow-soft' : 'text-muted'" (click)="setArchived(false)">
           Activos
         </button>
-        <button class="cursor-pointer rounded-lg px-3 py-1.5" [class]="archived() ? 'bg-white text-ink shadow-soft' : 'text-muted'" (click)="setArchived(true)">
+        <button class="cursor-pointer rounded-lg px-3 py-1.5" [class]="archived() ? 'bg-surface text-ink shadow-soft' : 'text-muted'" (click)="setArchived(true)">
           Archivados
         </button>
       </div>
